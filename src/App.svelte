@@ -48,6 +48,9 @@
 
 	
 </script>
+<svelte:head>
+  <title>Time Crier</title>
+</svelte:head>
 
 <Clock {hours} {minutes} {seconds}></Clock>
 
