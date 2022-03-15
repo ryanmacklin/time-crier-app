@@ -64,8 +64,14 @@
 
 <style>
 	/* Write your CSS here */
+
+	@font-face {
+		font-family: clockface;
+		src: url(/fonts/square_sans_serif_7.ttf);
+	}
+
 	p {
-		font-family: monospace;
+		font-family: clockface, monospace;
 		font-size: 100px;
 		margin: 0;
 		padding: 0;

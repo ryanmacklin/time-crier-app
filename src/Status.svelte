@@ -16,6 +16,6 @@
 
 <style>
 	p {
-		
+	   color: white; /* just to keep the warning off */
 	}
 </style>
