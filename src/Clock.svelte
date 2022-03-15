@@ -67,7 +67,7 @@
 
 	@font-face {
 		font-family: clockface;
-		src: url(/fonts/square_sans_serif_7.ttf);
+		src: url('/fonts/Technology.ttf');
 	}
 
 	p {
