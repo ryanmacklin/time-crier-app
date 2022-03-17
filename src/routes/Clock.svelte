@@ -1,7 +1,7 @@
 <script>
 	export let hours;
 	export let minutes;
-//	export let seconds;
+	export let seconds; /* not using yet, but will when I add in exercise mode */
 	let hour, minute, pm, fulltime, color, truetime, difference, red, green, blue, x;
 	
 	let timeColor = 'cyan';
@@ -61,6 +61,7 @@
 	<span class="time">{hour}:{minute}</span><span class="pm">{pm}</span>
 </p>
 <p class="diagnostic">{timeColor}</p>
+<p class="stop-complaining-seconds">{seconds}</p>
 
 <style>
 	/* Write your CSS here */
@@ -84,6 +85,9 @@
 		font-size: 50%;
 	}
 	.diagnostic {
+		display: none;
+	}
+	.stop-complaining-seconds { /* just to stop the warning */
 		display: none;
 	}
 </style>
