@@ -57,32 +57,41 @@
 	}
 </script>
 
-<p style="{cssVarStyles}">
-	<span class="time">{hour}:{minute}</span><span class="pm">{pm}</span>
-</p>
-<p class="diagnostic">{timeColor}</p>
-<p class="stop-complaining-seconds">{seconds}</p>
+<div class="">
+	<p class="time" style="{cssVarStyles}">
+		<span class="var-timecolor">{hour}:{minute}</span><span class="var-timecolor pm">{pm}</span>
+		<!-- TODO really tempted to make this individual charater SVG rendering rather than a font -->
+	</p>
+	<p class="diagnostic">{timeColor}</p>
+	<p class="stop-complaining-seconds">{seconds}</p>
+</div>
 
 <style>
-	/* Write your CSS here */
+	/* A bunch of this is pre-Tailwind, and there's all the variable stuff that can't be Tailwind'd so easily */
+	/* TODO we may have to inherit other properties to deal with dynamic resizing, as notifications come in */
 
 	@font-face {
 		font-family: clockface;
 		src: url('/fonts/Technology.ttf');
 	}
 
-	p {
+	p.time {
 		font-family: clockface, monospace;
-		font-size: 100px;
+		font-size: 450px;
 		margin: 0;
 		padding: 0;
+		text-align: right; /* EXTRA: this handles the leading 1 issue */
+		line-height: 95%; /* TODO: when I rebuild this font, there shouldn't be extra line height */
 	}
-	.time {
+	@media screen and (max-width: 768px) { p.time { font-size: 400px; }}
+	@media screen and (min-width: 1280px) { p.time { font-size: 550px; }}
+	/* TODO: actually figure out sizes later; obsessing now doesn't get core functionality done, then incorporate into Tailwind to use in Notifications etc */
+
+	.var-timecolor {
 		color: var(--time-color, white);
 	}
 	.pm {
-		color: var(--time-color, white);
-		font-size: 50%;
+		font-size: 50%; /* TODO: when I rebuild this font, maybe I'll have the letters top-align and auto-size inherently */
 	}
 	.diagnostic {
 		display: none;
@@ -93,17 +102,20 @@
 </style>
 
 <!--
+Notes for time colors:
+
 cyan
 #00FFFF
 rbg (0, 100, 100)
 
 yellow
 FFFF00
-rbg(100, 100, 0)
+rbg(100, 100, 0) // but might be too dark
 
 orange
 FFA500
-rgb(100, 65, 0)
+rgb(100, 65, 0) // is too dark
+TODO use a better one: rgb(252, 176, 0);
 
 2300 to 1:30: cyan to yellow
 1:31 to 2:15: yellow to orange
