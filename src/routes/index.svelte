@@ -1,12 +1,12 @@
 <script>
     import Clock from './Clock.svelte';
-    import Status from './Status.svelte';
+    import Notifications from './Notifications.svelte';
       
       import { onMount } from 'svelte';
   
       let time = new Date();
       let hours, minutes, seconds;
-      let status = "", newStatus;
+      let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
   
       // these automatically update when `time`
       // changes, because of the `$:` prefix
@@ -15,6 +15,7 @@
           minutes = time.getMinutes();
           seconds = time.getSeconds();
       }
+      /* TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that. */
   
       onMount(() => {
           const intervalTime = setInterval(() => {
@@ -23,8 +24,8 @@
   
         const intervalStatus = setInterval(() => {
            let truetime = (hours * 60) + minutes;
-           let newStatus = getStatus(truetime);
-           if (newStatus != "" && newStatus != status) status = newStatus;
+           let newPrimary = getStatus(truetime);
+           if (newPrimary != "" && newPrimary != primary) primary = newPrimary;
           }, 1000);
   
           return () => {
@@ -53,11 +54,11 @@
   </svelte:head>
   
   <Clock {hours} {minutes} {seconds}></Clock>
+  <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
-  <Status text={status}></Status>
+  <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
   
   <style>
-      /* Write your CSS here */
       :global(body) {
           color: white;
           background-color: black;
