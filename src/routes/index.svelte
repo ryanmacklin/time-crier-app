@@ -59,9 +59,11 @@
   <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
   
   <style>
+      /* TODO At some point, these will be in the right file */
       :global(body) {
           color: white;
           background-color: black;
+          padding: 10px;
       }
   </style>
   
