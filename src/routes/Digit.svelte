@@ -17,10 +17,11 @@
 		"lower-right": false,
 		"bottom": false
 	}
-	let use, pad, width, styleOn, styleOff;
+	let use, useHeight, pad, width, styleOn, styleOff;
 
 	$:{
 		use = value.substring(0, 1).toUpperCase();
+        useHeight = (superscript || subscript) ? (height / 2) : height; // use half-height if in superscript or subscript mode
 		pad = padding * (height / 100); // let padding scale with height size; precise padding can be added to the style directly
 
         /* DON'T THINK I NEED THIS ANYMORE but will keep around in case I'm wack
@@ -151,14 +152,14 @@
 <!-- no char -->
 {:else if (use == ':')}
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 55 312.56" style="height: {height}; padding-left: {pad}; padding-bottom: {pad}; display:inline; {style}" xml:space="preserve">
+	 viewBox="0 0 55 312.56" style="height: {useHeight}; padding-left: {pad}; padding-bottom: {pad}; display:inline; {style}" xml:space="preserve">
 <rect style="{styleOn}" x="10" y="67.06" width="35" height="35"/>
 <rect style="{styleOn}" x="10" y="210.5" width="35" height="35"/>
 <!-- alt -->{use}
 </svg>
 {:else if (use == '1' && slim)}
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 35.21 312.56" style="height: {height}; padding-left: {pad}; padding-bottom: {pad}; display:inline; {style}" xml:space="preserve">
+	 viewBox="0 0 35.21 312.56" style="height: {useHeight}; padding-left: {pad}; padding-bottom: {pad}; display:inline; {style}" xml:space="preserve">
 <!-- upper (upper-right) --><path style="{styleOn}" d="M0,127.87V40.22c0-0.53,0.21-1.04,0.58-1.41l20.77-20.84c0.78-0.78,2.05-0.79,2.83,0l10.23,10.2
 	c0.38,0.38,0.59,0.89,0.59,1.42v108.9c0,0.53-0.21,1.04-0.59,1.42l-10.23,10.23c-0.78,0.78-2.05,0.78-2.83,0L0.58,129.29
 	C0.21,128.91,0,128.4,0,127.87z"/>
@@ -169,7 +170,7 @@
 </svg>
 {:else}
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 168.31 312.56" style="width: {width}; height: {height}; padding-left: {pad}; padding-bottom: {pad}; display:inline; {style}" xml:space="preserve">
+	 viewBox="0 0 168.31 312.56" style="height: {useHeight}; padding-left: {pad}; padding-bottom: {pad}; display:inline; {style}" xml:space="preserve">
 <!-- top --><path style="{(active['top'] ? styleOn : styleOff)}" d="M127.87,35H40.22c-0.53,0-1.04-0.21-1.41-0.58L17.97,13.65c-0.78-0.78-0.79-2.05,0-2.83l10.2-10.23
 	C28.54,0.21,29.05,0,29.58,0h108.9c0.53,0,1.04,0.21,1.42,0.59l10.23,10.23c0.78,0.78,0.78,2.05,0,2.83l-20.84,20.76
 	C128.91,34.79,128.4,35,127.87,35z"/>

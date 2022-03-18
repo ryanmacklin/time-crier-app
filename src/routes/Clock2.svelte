@@ -5,7 +5,7 @@
 	export let minutes;
 	export let seconds; /* not using yet, but will when I add in exercise mode */
     export let height = 250;
-    export let showSeconds = true;
+    export let showSeconds = false;
 
     let hour, pm;
     let color = '#FFFFFF';
@@ -25,7 +25,7 @@
     }
 </script>
 
-<div style="verical-align: top;">
+<div>
     <Digit value="{(hour / 10).toString()}" {color} {height} slim />
     <Digit value="{(hour % 10).toString()}" {color} {height} />
     <Digit value=":" {color} {height} />
@@ -37,10 +37,6 @@
     <Digit value="{(seconds % 10).toString()}" {color} {height} />
     {/if}
     <Digit value="{pm ? "P" : "A"}" {color} {height} />
-    {#if pm}
-    <Digit value="P" {color} height={height / 2} />
-    <span style="position: relative; top: {0-(height/2)}" ><Digit value="P" {color} height={height / 2} /></span>
-    {:else}
-    <Digit value="A" {color} height={height / 2} style="padding-bottom: {height / 2}" />
-    {/if}
+    <span style="display:inline-block; height: 50%; verical-align: top;"><Digit value="{pm ? "P" : "A"}" {color} {height} superscript={!pm} subscript={pm} /></span>   
+    <span style="display:inline-block; height: 50%; verical-align: top;">Bleh</span>
 </div>

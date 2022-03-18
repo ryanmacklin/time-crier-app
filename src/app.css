@@ -1,20 +1,21 @@
+/***** TAILWIND IS HERE IF I NEED IT *****/
 /**
  * This injects Tailwind's base styles and any base styles registered by
  * plugins.
  */
- @tailwind base;
+/* @tailwind base; */
 
  /**
   * This injects Tailwind's component classes and any component classes
   * registered by plugins.
   */
- @tailwind components;
+ /* @tailwind components; */
  
  /**
   * This injects Tailwind's utility classes and any utility classes registered
   * by plugins.
   */
- @tailwind utilities;
+ /* @tailwind utilities; */
  
  /**
   * Use this directive to control where Tailwind injects the hover, focus,
@@ -23,8 +24,17 @@
   * If omitted, Tailwind will append these classes to the very end of
   * your stylesheet by default.
   */
- @tailwind variants;
+ /* @tailwind variants; */
 
+
+
+/**** CORE STYLES *****/
+
+ body {
+    color: white;
+    background-color: black;
+    padding: 10px;
+}
 
  svg {
      display: inline;
