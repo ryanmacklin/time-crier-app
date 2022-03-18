@@ -36,7 +36,15 @@
     <Digit value="{(seconds / 10).toString()}" {color} {height} />
     <Digit value="{(seconds % 10).toString()}" {color} {height} />
     {/if}
-    <Digit value="{pm ? "P" : "A"}" {color} {height} />
-    <span style="display:inline-block; height: 50%; verical-align: top;"><Digit value="{pm ? "P" : "A"}" {color} {height} superscript={!pm} subscript={pm} /></span>   
-    <span style="display:inline-block; height: 50%; verical-align: top;">Bleh</span>
+    <Digit value="{pm ? "P" : "A"}" {color} height={height / 2} style="vertical-align: {pm ? "bottom" : "top"}" /> 
 </div>
+
+<style>
+    div {
+        float: right;
+        white-space: nowrap;
+        display: block;
+        height: 255; /* hardcoding just to get this one stage done */
+    }
+
+</style>

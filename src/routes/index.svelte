@@ -65,6 +65,8 @@
   <!--<Clock {hours} {minutes} {seconds}></Clock>-->
   <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
+<div style="clear:both"></div>
+
   <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
 
   
