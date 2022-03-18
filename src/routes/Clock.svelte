@@ -6,10 +6,8 @@
 	export let seconds; /* not using yet, but will when I add in exercise mode */
 	let hour, minute, pm, fulltime, color, truetime, difference, red, green, blue, x;
 	
-	let timeColor = 'cyan';
-	$: cssVarStyles = `--time-color:${timeColor}`;
-	let digits = {};
-	
+	let timeColor = 'white'; // default if nothing loads
+	//$: cssVarStyles = `--time-color:${timeColor}`;
 	
 	$: {
 		if (hours == 0) {
@@ -58,56 +56,23 @@
 			timeColor = "rgb(" + red + "," + green + "," + blue + ")";			
 		}
 
-		digits["h1"] = (hour > 9 ? '1' : '');
-		digits["h2"] = hour % 10;
-		digits["m1"] = minute / 10;
-		digits["m2"] = minute % 10;
-		// TODO also seconds
-		
 	}
 </script>
 
-<Digit value={digits["h1"]} slim />
+{#if (hour > 9)}
+<Digit value="1" color={timeColor} slim />
+{/if}
+<Digit value={(hour % 10).toString()} color={timeColor} />
+<Digit value=':' color={timeColor} />
+<Digit value={(minute / 10).toString()} color={timeColor} />
+<Digit value={(minute % 10).toString()} color={timeColor} />
+<Digit value={pm} color={timeColor} />
 
-<div class="">
-		<p class="time" style="{cssVarStyles}">
-		<span class="var-timecolor">{hour}:{minute}</span><span class="var-timecolor pm">{pm}</span>
-		<!-- TODO really tempted to make this individual charater SVG rendering rather than a font -->
-	</p>
-	<p class="diagnostic">{timeColor}</p>
+{#if 0}
 	<p class="stop-complaining-seconds">{seconds}</p>
-</div>
+{/if}
 
 <style>
-	/* A bunch of this is pre-Tailwind, and there's all the variable stuff that can't be Tailwind'd so easily */
-	/* TODO we may have to inherit other properties to deal with dynamic resizing, as notifications come in */
-
-	@font-face {
-		font-family: clockface;
-		src: url('/fonts/Technology.ttf');
-	}
-
-	p.time {
-		font-family: clockface, monospace;
-		font-size: 450px;
-		margin: 0;
-		padding: 0;
-		text-align: right; /* EXTRA: this handles the leading 1 issue */
-		line-height: 95%; /* TODO: when I rebuild this font, there shouldn't be extra line height */
-	}
-	@media screen and (max-width: 768px) { p.time { font-size: 400px; }}
-	@media screen and (min-width: 1280px) { p.time { font-size: 550px; }}
-	/* TODO: actually figure out sizes later; obsessing now doesn't get core functionality done, then incorporate into Tailwind to use in Notifications etc */
-
-	.var-timecolor {
-		color: var(--time-color, white);
-	}
-	.pm {
-		font-size: 50%; /* TODO: when I rebuild this font, maybe I'll have the letters top-align and auto-size inherently */
-	}
-	.diagnostic {
-		display: none;
-	}
 	.stop-complaining-seconds { /* just to stop the warning */
 		display: none;
 	}

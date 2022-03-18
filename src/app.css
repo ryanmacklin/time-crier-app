@@ -24,3 +24,8 @@
   * your stylesheet by default.
   */
  @tailwind variants;
+
+
+ svg {
+     display: inline;
+ }

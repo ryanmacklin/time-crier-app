@@ -1,6 +1,8 @@
 <script>
     import Clock from './Clock.svelte';
+    import Clock2 from './Clock2.svelte';
     import Notifications from './Notifications.svelte';
+    import Digit from './Digit.svelte';
       
       import { onMount } from 'svelte';
   
@@ -52,7 +54,14 @@
   <svelte:head>
     <title>Time Crier</title>
   </svelte:head>
-  
+
+{#if 0}
+  <Digit value="{(seconds % 10).toString()}" />
+  {seconds}
+
+  {/if}
+  <Clock2 {hours} {minutes} {seconds} />
+
   <Clock {hours} {minutes} {seconds}></Clock>
   <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
