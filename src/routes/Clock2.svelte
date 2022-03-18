@@ -43,8 +43,6 @@
     div {
         float: right;
         white-space: nowrap;
-        display: block;
-        height: 255; /* hardcoding just to get this one stage done */
     }
 
 </style>
