@@ -1,4 +1,6 @@
 <script>
+    import Digit from './Digit.svelte';
+
 	export let hours;
 	export let minutes;
 	export let seconds; /* not using yet, but will when I add in exercise mode */
@@ -6,17 +8,18 @@
 	
 	let timeColor = 'cyan';
 	$: cssVarStyles = `--time-color:${timeColor}`;
+	let digits = {};
 	
 	
 	$: {
 		if (hours == 0) {
-			pm = "AM";
+			pm = "A";
 			hour = 12;
 		} else if (hours > 12) {
-			pm = "PM";
+			pm = "P";
 			hour = hours - 12;
 		} else {
-			pm = "AM";
+			pm = "A";
 			hour = hours;
 		}
 		if (hour < 10) {
@@ -54,11 +57,20 @@
 			blue = 0;
 			timeColor = "rgb(" + red + "," + green + "," + blue + ")";			
 		}
+
+		digits["h1"] = (hour > 9 ? '1' : '');
+		digits["h2"] = hour % 10;
+		digits["m1"] = minute / 10;
+		digits["m2"] = minute % 10;
+		// TODO also seconds
+		
 	}
 </script>
 
+<Digit value={digits["h1"]} slim />
+
 <div class="">
-	<p class="time" style="{cssVarStyles}">
+		<p class="time" style="{cssVarStyles}">
 		<span class="var-timecolor">{hour}:{minute}</span><span class="var-timecolor pm">{pm}</span>
 		<!-- TODO really tempted to make this individual charater SVG rendering rather than a font -->
 	</p>
