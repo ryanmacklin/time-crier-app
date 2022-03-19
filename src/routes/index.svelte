@@ -91,8 +91,8 @@
                 // Math.round(startColor + ( (endColor - startColor) * ((i - startTime) / (endTime - startTime)) ));
                 for (let i = startTime; i <= endTime; i++) {
                     let r = Math.round(startColor.r + ( (endColor.r - startColor.r) * ((i - startTime) / (endTime - startTime)) ));
-                    let g = Math.round(startColor.g + ( (endColor.r - startColor.g) * ((i - startTime) / (endTime - startTime)) ));
-                    let b = Math.round(startColor.b + ( (endColor.r - startColor.b) * ((i - startTime) / (endTime - startTime)) ));
+                    let g = Math.round(startColor.g + ( (endColor.g - startColor.g) * ((i - startTime) / (endTime - startTime)) ));
+                    let b = Math.round(startColor.b + ( (endColor.b - startColor.b) * ((i - startTime) / (endTime - startTime)) ));
                     let s = "#";
                     s += (r < 16 ? "0" : "") + r.toString(16);
                     s += (g < 16 ? "0" : "") + g.toString(16);
@@ -102,8 +102,8 @@
             } else {
                 // error!
             }
-
         });
+        //console.log(res);
         return res;
     }
 
