@@ -1,41 +1,54 @@
 {
     "updateId": "12345",
+    "colorPresets": {
+            "cyan": "#00FFFF",
+            "yellow": "#FFFF00",
+            "orange": "#FFA500",
+            "red": "#FF9999"
+    },
     "clockColors": {
         "default": "#FFFFFF",
         "schedule": [
             {
+                "tag": "night",
+                "startTime": 2200,
+                "startColor": "%default",
+                "endTime": 2330,
+                "endColor": "%cyan"
+            },
+            {
                 "tag": "bed-1",
                 "startTime": 2330,
-                "startColor": "#FF0000",
+                "startColor": "%cyan",
                 "endTime": 130,
-                "endColor": "#0000FF"
+                "endColor": "%yellow"
             },
             {
                 "tag": "bed-2",
                 "startTime": 130,
-                "startColor": "#FF0000",
-                "endTime": 245,
-                "endColor": "#0000FF"
+                "startColor": "%yellow",
+                "endTime": 215,
+                "endColor": "%orange"
             },
             {
                 "tag": "bed-3",
-                "startTime": 245,
-                "startColor": "#FF0000",
-                "endTime": 330,
-                "endColor": "#0000FF"
+                "startTime": 215,
+                "startColor": "%orange",
+                "endTime": 300,
+                "endColor": "%red"
             },
             {
                 "tag": "bed-4",
-                "startTime": 330,
-                "startColor": "#FF0000",
-                "endTime": 340,
-                "endColor": "#0000FF"
-            },
-            {
-                "tag": "bed-5",
-                "startTime": 340,
+                "startTime": 300,
                 "color": "#FF0000",
                 "endTime": 500
+            },
+            {
+                "tag": "morning",
+                "startTime": 500,
+                "startColor": "%red",
+                "endTime": 515,
+                "endColor": "%default"
             }
         ]
     },

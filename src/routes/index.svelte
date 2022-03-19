@@ -10,10 +10,13 @@
     let configFreshness = 0;
     let configLoading = false;
     let configMaxFreshness = 300; // 5 minutes
+    let configMalloadCount = 0;
+    let newconfig;
 
     function freshConfig() { // a blank config file with just white as the default clock color
         return {
             "updateId": "",
+            "colorPresets": {},
             "clockColors": {
                 "default": "",
                 "schedule": []
@@ -32,9 +35,12 @@
         promise.then(data => {
             if (data.updateId != config.updateId) { // go ahead and load a new config
                 console.log("new config file found!");
-                let newconfig = freshConfig();
+                newconfig = freshConfig();
                 // updateId
                 newconfig.updateId = data.updateId;
+
+                // colorPresets
+                newconfig.colorPresets = data.colorPresets;
                 
                 // default clock color
                 newconfig.clockColors.default = data.clockColors.default || defaultClockColor;
@@ -47,6 +53,7 @@
                 // Okay, we can replace the config now
                 config = newconfig;
                 configFreshness = configMaxFreshness;
+                configMalloadCount = 0;
                 configLoading = false;
                 console.log("config file updated");
             }
@@ -54,6 +61,7 @@
         .catch(reason => { // TODO: better UX for when error happens
             console.log(reason.message); // just console.logging the error for now
             configFreshness = 15; // try again in 15 seconds
+            configMalloadCount++;
             configLoading = false;
         });
     }
@@ -75,11 +83,11 @@
                 let color = getColorComponenets(i.color); // just to check color
                 color = i.color; // if it got here, the color's okay
                 for (let i = startTime; i <= endTime; i++) {
-                    res[i % 1440] = color;
+                    res[i % 1440] = getColor(color, newconfig.colorPresets);
                 }
             } else if (i.startColor && i.endColor) {
-                let startColor = getColorComponenets(i.startColor);
-                let endColor = getColorComponenets(i.endColor);
+                let startColor = getColorComponenets(getColor(i.startColor, newconfig.colorPresets));
+                let endColor = getColorComponenets(getColor(i.endColor, newconfig.colorPresets));
                 // Math.round(startColor + ( (endColor - startColor) * ((i - startTime) / (endTime - startTime)) ));
                 for (let i = startTime; i <= endTime; i++) {
                     let r = Math.round(startColor.r + ( (endColor.r - startColor.r) * ((i - startTime) / (endTime - startTime)) ));
@@ -96,8 +104,22 @@
             }
 
         });
-        console.log(res);
         return res;
+    }
+
+    function getColor(x, col = null) {
+        // TODO handle error!
+        if (x.substring(0,1) == "%") {
+            x = x.substring(1);
+            if (x == "default") {
+                return config.clockColors.default;
+            } else if (col) {
+                return col[x];
+            } else {
+                return config.colorPresets[x];
+            }
+        }
+        return x; // doesn't need transation
     }
 
     function getColorComponenets(c) {
