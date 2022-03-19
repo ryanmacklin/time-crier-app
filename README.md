@@ -66,3 +66,4 @@ Primary notifications are set at specific times. Secondary notifications are set
  - Have individual unit-level notifications, like specifying "basement" in the URL means that basement-only notifications happen and explicitly non-basement ones don't, which is probably best as a "tag" model that an instance can un/subscribe to
  - Tap on the screen to enable different modes/extended features, like an exercise mode (showing seconds and minimizing weather or other stuff to keep the clock size good) or timer
  - Audio cues
+ - Let clock use 24-hour time as a config option (which means no slim leading 1 in those cases, and recalculating the expected width to handling leading 2s + no A/P, which is likely roughly the same)
