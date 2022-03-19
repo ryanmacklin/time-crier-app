@@ -31,7 +31,7 @@
 
     async function fetchConfig () {
         if (configLoading) {return;} // stop because there's already some attempt at loading (I think?)
-        console.log("fetching config file");
+        console.log("fetching config file [" + time.toLocaleString() + "]");
         configLoading = true;
         let response = await fetch("./config.json");
         let promise = response.json();
@@ -58,7 +58,7 @@
                 configFreshness = configMaxFreshness;
                 configMalloadCount = 0;
                 configLoading = false;
-                console.log("config file updated");
+                console.log("config file updated [" + time.toLocaleString() + "]");
             } else {
                 console.log("no updated needed");
             }
@@ -66,7 +66,7 @@
         .catch(reason => { // TODO: better UX for when error happens
             configMalloadCount++;
             let m = reason.message;
-            m = "Config file: " + reason.message + " (" + configMalloadCount + " failed load)";
+            m = "Config file: " + reason.message + " (" + configMalloadCount + " failed load) [" + time.toLocaleString() + "]";
             console.error(m);
             errorMessage = m;
             configFreshness = 15; // try again in 15 seconds
