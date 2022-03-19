@@ -1,16 +1,11 @@
 <script>
-    import Clock from './Clock.svelte';
-    import Clock2 from './Clock2.svelte';
-    import Clock3 from './Clock3.svelte';
-    import Notifications from './Notifications.svelte';
-    import Digit from './Digit.svelte';
-
     import { onMount } from 'svelte';
+    import Clock from './Clock.svelte';
+    import Notifications from './Notifications.svelte';
 
+    /*** START TIME ****/
     let time = new Date();
     let hours, minutes, seconds;
-    let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
-
     // these automatically update when `time` changes, because of the `$:` prefix
     $: {
         hours = time.getHours();
@@ -24,6 +19,10 @@
               time = new Date();
           }, 1000);
     });
+    /*********************/
+
+    /**** START NOTIFICATIONS ****/
+    let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
 
     onMount(async () => {
         /* const intervalStatus = setInterval(() => {
@@ -36,6 +35,7 @@
             clearInterval(intervalTime);
         }; */
     });
+    /*********************/
 
     function getStatus(truetime) {
         let newStatus = "";
@@ -57,7 +57,8 @@
     <title>Time Crier</title>
   </svelte:head>
 
-  <Clock3 {time} color="red"/>
+  <Clock {time} />
+  <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
 <div style="clear:both"></div>
 
