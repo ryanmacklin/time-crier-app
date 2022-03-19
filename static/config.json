@@ -4,35 +4,35 @@
         "default": "#FFFFFF",
         "schedule": [
             {
-                "name": "bed-1",
+                "tag": "bed-1",
                 "startTime": 2330,
                 "startColor": "#FF0000",
                 "endTime": 130,
                 "endColor": "#0000FF"
             },
             {
-                "name": "bed-2",
+                "tag": "bed-2",
                 "startTime": 130,
                 "startColor": "#FF0000",
                 "endTime": 245,
                 "endColor": "#0000FF"
             },
             {
-                "name": "bed-3",
+                "tag": "bed-3",
                 "startTime": 245,
                 "startColor": "#FF0000",
                 "endTime": 330,
                 "endColor": "#0000FF"
             },
             {
-                "name": "bed-4",
+                "tag": "bed-4",
                 "startTime": 330,
                 "startColor": "#FF0000",
                 "endTime": 340,
                 "endColor": "#0000FF"
             },
             {
-                "name": "bed-5",
+                "tag": "bed-5",
                 "startTime": 340,
                 "color": "#FF0000",
                 "endTime": 500

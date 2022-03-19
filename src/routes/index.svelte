@@ -16,7 +16,7 @@
             "updateId": "",
             "clockColors": {
                 "default": "",
-                "minutes": []
+                "schedule": []
             },
             "notifications": { 
             }
@@ -24,6 +24,7 @@
     }
 
     async function fetchConfig () {
+        if (configLoading) {return;} // stop because there's already some attempt at loading (I think?)
         console.log("fetching config file");
         configLoading = true;
         let response = await fetch("./config.json");
@@ -39,8 +40,8 @@
                 newconfig.clockColors.default = data.clockColors.default || defaultClockColor;
                 // calculate clock colors
                 //newconfig.clockColors.minutes[1392] = "blue";
-                if (newconfig.clockColors.schedule) {
-                    calculateColorSchedule(newconfig.clockColors.schedule);
+                if (data.clockColors.schedule) {
+                    newconfig.clockColors.schedule = calculateColorSchedule(data.clockColors.schedule);
                 }
 
                 // Okay, we can replace the config now
@@ -59,24 +60,60 @@
 
     function calculateColorSchedule(con) {
         let res = [];
-        con.foreach(i => {
+        con.forEach(i => {
             // get times
-            // TODO throw error if either time isn't proper military time (see miltime2minutes())
+            // TODO throw error if either time isn't proper military time, in miltime2minutes()
+            //let tag = i.tag; // not bothering with tags right now, even though they're in the config as placeholders
             let startTime = miltime2minutes(i.startTime);
             let endTime = miltime2minutes(i.endTime);
             if (endTime < startTime) endTime += 1440; // to handle time spanning midnight
             // start with colors before reading them
-            // TODO throw error if either color is invalid
-            let startColorR = -1;
-            let startColorG = -1;
-            let startColorB = -1;
-            let endColorR = -1;
-            let endColorG = -1;
-            let endColorB = -1;
+            // TODO throw error if either color is invalid, in getColorComponenets()
+            // there's either just one color for the time, or a color gradient
 
+            if (i.color) {
+                let color = getColorComponenets(i.color); // just to check color
+                color = i.color; // if it got here, the color's okay
+                for (let i = startTime; i <= endTime; i++) {
+                    res[i % 1440] = color;
+                }
+            } else if (i.startColor && i.endColor) {
+                let startColor = getColorComponenets(i.startColor);
+                let endColor = getColorComponenets(i.endColor);
+                // Math.round(startColor + ( (endColor - startColor) * ((i - startTime) / (endTime - startTime)) ));
+                for (let i = startTime; i <= endTime; i++) {
+                    let r = Math.round(startColor.r + ( (endColor.r - startColor.r) * ((i - startTime) / (endTime - startTime)) ));
+                    let g = Math.round(startColor.g + ( (endColor.r - startColor.g) * ((i - startTime) / (endTime - startTime)) ));
+                    let b = Math.round(startColor.b + ( (endColor.r - startColor.b) * ((i - startTime) / (endTime - startTime)) ));
+                    let s = "#";
+                    s += (r < 16 ? "0" : "") + r.toString(16);
+                    s += (g < 16 ? "0" : "") + g.toString(16);
+                    s += (b < 16 ? "0" : "") + b.toString(16);
+                    res[i % 1440] = s.toUpperCase();
+                }
+            } else {
+                // error!
+            }
 
         });
+        console.log(res);
         return res;
+    }
+
+    function getColorComponenets(c) {
+        // right not this assumes 6-digit hex code (with or without # sign); low-pri todo is maybe not limit to this
+        // TODO throw error if either color is invalid
+        let r, g, b;
+
+        if (c.substring(0,1) == "#") c = c.substring(1);
+        r = Number.parseInt(c.substring(0,2), 16);
+        if (Number.isNaN(r)) {} // error!
+        g = Number.parseInt(c.substring(2,4), 16);
+        if (Number.isNaN(g)) {} // error!
+        b = Number.parseInt(c.substring(4,6), 16);
+        if (Number.isNaN(b)) {} // error!
+
+        return {"r": r, "g": g, "b": b};
     }
 
     function miltime2minutes(t) {
@@ -116,10 +153,15 @@
           }, 1000);
     });
 
+    function curMinute() {
+        return (hours * 60) + minutes;
+    }
+
     function getClockColor() {
-        let c = config.clockColors.minutes[(hours * 60) + minutes] || config.clockColors.default || defaultClockColor;
-        console.log((hours * 60) + minutes);
-        console.log(c);
+        // not bothering with tags right now, even though they're in the config as placeholders. so this is pretty simple
+        let c = config.clockColors.schedule[curMinute()] || config.clockColors.default || defaultClockColor;
+        //console.log(curMinute());
+        //console.log(c);
         return c;
     }
     /*********************/
