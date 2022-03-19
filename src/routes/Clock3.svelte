@@ -3,11 +3,10 @@
     import Tsp from './Tsp.svelte';
     import { onMount } from 'svelte';
 
-	export let hours;
-	export let minutes;
-	export let seconds; /* not using yet, but will when I add in exercise mode */
     export let height = 250;
     export let color = '#FFFFFF'; // we'll let elements outside of clock handle changing the color
+
+    let hours, minutes, seconds;
 
     let time = new Date();
     let hour, pm;
@@ -22,6 +21,18 @@
     let secOpacTimeFade = 0;
     let secOpacTimeout = 10; // 5 minutes/300 seconds
     let secOpacTimeoutStartfade = 5;
+
+    onMount(async () => {
+          const intervalTime = setInterval(() => {
+              time = new Date();
+          }, 1000);
+    }
+
+    $: {
+          hours = time.getHours();
+          minutes = time.getMinutes();
+          seconds = time.getSeconds();
+      }
 
     $:{
         if (hours > 12) {
