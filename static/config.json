@@ -1,11 +1,11 @@
 {
     "updateId": "12345",
     "clockColors": {
-        "defaultColor": "#FFFFFF",
+        "default": "#FFFFFF",
         "schedule": [
             {
                 "name": "bed-1",
-                "startTime": 1130,
+                "startTime": 2330,
                 "startColor": "#FF0000",
                 "endTime": 130,
                 "endColor": "#0000FF"
