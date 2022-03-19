@@ -1,6 +1,7 @@
 <script>
     import Clock from './Clock.svelte';
     import Clock2 from './Clock2.svelte';
+    import Clock3 from './Clock3.svelte';
     import Notifications from './Notifications.svelte';
     import Digit from './Digit.svelte';
 
@@ -10,8 +11,7 @@
     let hours, minutes, seconds;
     let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
 
-    // these automatically update when `time`
-    // changes, because of the `$:` prefix
+    // these automatically update when `time` changes, because of the `$:` prefix
     $: {
         hours = time.getHours();
         minutes = time.getMinutes();
@@ -20,10 +20,12 @@
     /* TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that. */
 
     onMount(async () => {
-        const intervalTime = setInterval(() => {
-            time = new Date();
-        }, 1000);
+          const intervalTime = setInterval(() => {
+              time = new Date();
+          }, 1000);
+    });
 
+    onMount(async () => {
         /* const intervalStatus = setInterval(() => {
         let truetime = (hours * 60) + minutes;
         let newPrimary = getStatus(truetime);
@@ -55,15 +57,7 @@
     <title>Time Crier</title>
   </svelte:head>
 
-{#if 0}
-  <Digit value="{(seconds % 10).toString()}" />
-  {seconds}
-
-  {/if}
-  <Clock2 {hours} {minutes} {seconds} />
-
-  <!--<Clock {hours} {minutes} {seconds}></Clock>-->
-  <!-- FAR FUTURE TODO: weather (current + upcoming) -->
+  <Clock3 {time} color="red"/>
   
 <div style="clear:both"></div>
 

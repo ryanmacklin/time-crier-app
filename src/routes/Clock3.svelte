@@ -1,40 +1,36 @@
 <script>
     import Digit from './Digit.svelte';
     import Tsp from './Tsp.svelte';
-    import { onMount } from 'svelte';
 
+    export let time = new Date();
     export let height = 250;
     export let color = '#FFFFFF'; // we'll let elements outside of clock handle changing the color
 
+    /* working space vars */
     let hours, minutes, seconds;
-
-    let time = new Date();
+    let curTime;
     let hour, pm;
-
-    let divheightSeconds = 3.5;
-    let divheightPm = 2.25;
-    let divheightSpacing = 19 * (height / 100);
-
     let h1, h2, m1, m2, s1, s2;
     let secOpacity = 0;
     let secOpacTime = 0;
     let secOpacTimeFade = 0;
-    let secOpacTimeout = 10; // 5 minutes/300 seconds
-    let secOpacTimeoutStartfade = 5;
 
-    onMount(async () => {
-          const intervalTime = setInterval(() => {
-              time = new Date();
-          }, 1000);
-    }
+    /* calculating height of sub-elements */
+    let divheightSeconds = 3.5;
+    let divheightPm = 2.25;
+    let divheightSpacing = 19 * (height / 100);
 
-    $: {
-          hours = time.getHours();
-          minutes = time.getMinutes();
-          seconds = time.getSeconds();
-      }
+    /* things that could be global settings in config file */
+    let secOpacTimeout = 120; // 2 minutes/120 seconds
+    let secOpacTimeoutStartfade = 15; // fades over 15 seconds
+    let secOpacRefreshThreshold = 0.5;
 
-    $:{
+    $: { // these automatically update when `time` changes, because of the `$:` prefix
+        hours = time.getHours();
+        minutes = time.getMinutes();
+        seconds = time.getSeconds();
+        curTime = Math.trunc(time.getTime() / 1000);
+
         if (hours > 12) {
             hour = hours - 12;
             pm = true;
@@ -56,23 +52,19 @@
 
         if (secOpacity > 0) {
             // count down opacity
-            if (curTime() > secOpacTimeFade) { // right now this doesn't cover when time wraps around
-                secOpacity = 0;
+            if (curTime >= secOpacTimeFade) {
+                secOpacity = 1 - ((curTime - secOpacTimeFade) / (secOpacTime - secOpacTimeFade));
                 //secOpacTime = 0;
             }
         }
     }
 
-    function curTime() {
-        return ((hours * 60) + minutes) * 60 + seconds;
-    }
-
 	function acivateOpacity() {
-        if (secOpacity < 0.5) {
+        if (secOpacity <= secOpacRefreshThreshold) {
             // activate (or renew) opacity
             secOpacity = 1;
-            secOpacTime = curTime() + secOpacTimeout;
-            secOpacTimeFade = curTime() + secOpacTimeoutStartfade;
+            secOpacTime = curTime + (secOpacTimeout);
+            secOpacTimeFade = curTime + (secOpacTimeoutStartfade);
         } else {
             // immediately deactivate opacity
             secOpacity = 0;
@@ -102,7 +94,6 @@
         </div>
     </div>
 </div>
-{secOpacTimeFade - (((hours * 60) + minutes) * 60 + seconds)}
 
 <style>
     div.clock {

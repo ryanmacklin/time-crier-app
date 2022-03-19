@@ -91,7 +91,6 @@
         </div>
     </div>
 </div>
-{secOpacTimeFade - (((hours * 60) + minutes) * 60 + seconds)}
 
 <style>
     div.clock {
