@@ -2,6 +2,173 @@
     import { onMount } from 'svelte';
     import Clock from './Clock.svelte';
     import Notifications from './Notifications.svelte';
+    import Error from './Error.svelte';
+
+    /**** GET CONFIG ****/
+    let config = freshConfig();
+    let defaultClockColor = "#FFFFFF";
+    let clockColor = defaultClockColor;
+    let configFreshness = 0;
+    let configLoading = false;
+    let configMaxFreshness = 300; // 5 minutes
+    let configMalloadCount = 0;
+    let newconfig;
+
+    let errorMessage = "";
+
+    function freshConfig() { // a blank config file with just white as the default clock color
+        return {
+            "updateId": "",
+            "colorPresets": {},
+            "clockColors": {
+                "default": "",
+                "schedule": []
+            },
+            "notifications": { 
+            }
+        };
+    }
+
+    async function fetchConfig () {
+        if (configLoading) {return;} // stop because there's already some attempt at loading (I think?)
+        console.log("fetching config file");
+        configLoading = true;
+        let response = await fetch("./config.json");
+        let promise = response.json();
+        promise.then(data => {
+            if (data.updateId != config.updateId) { // go ahead and load a new config
+                console.log("new config file found!");
+                newconfig = freshConfig();
+                // updateId
+                newconfig.updateId = data.updateId;
+
+                // colorPresets
+                newconfig.colorPresets = data.colorPresets;
+                
+                // default clock color
+                newconfig.clockColors.default = data.clockColors.default || defaultClockColor;
+                // calculate clock colors
+                //newconfig.clockColors.minutes[1392] = "blue";
+                if (data.clockColors.schedule) {
+                    newconfig.clockColors.schedule = calculateColorSchedule(data.clockColors.schedule);
+                }
+
+                // Okay, we can replace the config now
+                config = newconfig;
+                configFreshness = configMaxFreshness;
+                configMalloadCount = 0;
+                configLoading = false;
+                console.log("config file updated");
+            } else {
+                console.log("no updated needed");
+            }
+        })
+        .catch(reason => { // TODO: better UX for when error happens
+            configMalloadCount++;
+            let m = reason.message;
+            m = "Config file: " + reason.message + " (" + configMalloadCount + " failed load)";
+            console.error(m);
+            errorMessage = m;
+            configFreshness = 15; // try again in 15 seconds
+            configLoading = false;
+        });
+    }
+
+    function calculateColorSchedule(con) {
+        let res = [];
+        con.forEach(i => {
+            // get times
+            let tag = i.tag || ""; // not bothering with tags right now, even though they're in the config as placeholders, but they're useful in debugging
+            //console.log(tag);
+
+            let startTime = miltime2minutes(i.startTime);
+            let endTime = miltime2minutes(i.endTime);
+            if (endTime < startTime) endTime += 1440; // to handle time spanning midnight
+
+            if (i.color) {
+                let color = getColorComponenets(i.color); // just to check color
+                color = i.color; // if it got here, the color's okay
+                for (let i = startTime; i <= endTime; i++) {
+                    res[i % 1440] = getColor(color, newconfig);
+                }
+            } else if (i.startColor && i.endColor) {
+                let startColor = getColorComponenets(getColor(i.startColor, newconfig));
+                let endColor = getColorComponenets(getColor(i.endColor, newconfig));
+                for (let i = startTime; i <= endTime; i++) {
+                    let r = Math.round(startColor.r + ( (endColor.r - startColor.r) * ((i - startTime) / (endTime - startTime)) ));
+                    let g = Math.round(startColor.g + ( (endColor.g - startColor.g) * ((i - startTime) / (endTime - startTime)) ));
+                    let b = Math.round(startColor.b + ( (endColor.b - startColor.b) * ((i - startTime) / (endTime - startTime)) ));
+                    let s = "#";
+                    s += (r < 16 ? "0" : "") + r.toString(16);
+                    s += (g < 16 ? "0" : "") + g.toString(16);
+                    s += (b < 16 ? "0" : "") + b.toString(16);
+                    res[i % 1440] = s.toUpperCase();
+                }
+            } else {
+                throw "Invalid color schedule entry for tag \"" + tag + "\"";
+                // error!
+            }
+        });
+        //console.log(res);
+        return res;
+    }
+
+    function getColor(x, col = config) {
+        // TODO handle error!
+        if (x.substring(0,1) == "%") {
+            x = x.substring(1);
+            if (x == "default") {
+                return col.clockColors.default;
+            } else {
+                try {
+                    return col.colorPresets[x];
+                }
+                catch {
+                    throw '"' + x + "\" isn't a listed preset color";
+                }
+            }
+        }
+        return x; // doesn't need transation
+    }
+
+    function getColorComponenets(x) {
+        // this assumes 6-digit hex code (with or without # sign)
+        let r, g, b;
+        let c = x;
+        if (c.substring(0,1) == "#") c = c.substring(1);
+        r = Number.parseInt(c.substring(0,2), 16);
+        if (Number.isNaN(r)) {
+            console.log("---" + x);
+        }
+        if (Number.isNaN(r)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
+        g = Number.parseInt(c.substring(2,4), 16);
+        if (Number.isNaN(g)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
+        b = Number.parseInt(c.substring(4,6), 16);
+        if (Number.isNaN(b)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
+        return {"r": r, "g": g, "b": b};
+    }
+
+    function miltime2minutes(t) {
+        if (!Number.isInteger(t)) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
+        let hours = Math.trunc(t / 100);
+        let minutes = t % 100;
+        if (hours > 23 || hours < 0) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
+        if (minutes > 59 || minutes < 0) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
+        return (Math.trunc(t / 100) * 60) + (t % 100);
+    }
+
+    // config file initial & periodic loading
+    onMount(async () => {
+          const intervalTime = setInterval(() => {
+                if (!configLoading) {
+                    if (configFreshness <= 0) {
+                        fetchConfig();
+                    } else {
+                        configFreshness--;
+                    }
+                }
+          }, 1000);
+    });
 
     /*** START TIME ****/
     let time = new Date();
@@ -11,14 +178,28 @@
         hours = time.getHours();
         minutes = time.getMinutes();
         seconds = time.getSeconds();
+        clockColor = getClockColor();
     }
-    /* TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that. */
+    // TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that.
+    // REAL TODO: let there be a brief loading screen, cuz it takes a couple seconds to do initial config load, so there's some possibly color blipping anyway
 
     onMount(async () => {
           const intervalTime = setInterval(() => {
               time = new Date();
           }, 1000);
     });
+
+    function curMinute() {
+        return (hours * 60) + minutes;
+    }
+
+    function getClockColor() {
+        // not bothering with tags right now, even though they're in the config as placeholders. so this is pretty simple
+        let c = config.clockColors.schedule[curMinute()] || config.clockColors.default || defaultClockColor;
+        //console.log(curMinute());
+        //console.log(c);
+        return c;
+    }
     /*********************/
 
     /**** START NOTIFICATIONS ****/
@@ -57,11 +238,11 @@
     <title>Time Crier</title>
   </svelte:head>
 
-  <Clock {time} />
+  <Clock {time} color={clockColor} />
   <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
 <div style="clear:both"></div>
 
   <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
 
-  
+  <Error />
