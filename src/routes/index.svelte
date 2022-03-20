@@ -15,7 +15,7 @@
     let clockColor = defaultClockColor;
     let configFreshness = 0;
     let configLoading = false;
-    let configMaxFreshness = 300; // 5 minutes for live; TODO can we make it happen more often in dev?
+    let configMaxFreshness = 10; // 300 seconds/5 minutes for live; TODO can we make it happen more often in dev?
     let configMalloadCount = 0;
     let newconfig;
 
