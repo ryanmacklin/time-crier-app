@@ -4,13 +4,18 @@
     import Notifications from './Notifications.svelte';
     import Error from './Error.svelte';
 
+    /**** log ****/
+    function log(message) {
+        console.log("[" + time.toLocaleString() + "]  " + message);
+    }
+
     /**** GET CONFIG ****/
     let config = freshConfig();
     let defaultClockColor = "#FFFFFF";
     let clockColor = defaultClockColor;
     let configFreshness = 0;
     let configLoading = false;
-    let configMaxFreshness = 300; // 5 minutes
+    let configMaxFreshness = 300; // 5 minutes for live; TODO can we make it happen more often in dev?
     let configMalloadCount = 0;
     let newconfig;
 
@@ -31,13 +36,13 @@
 
     async function fetchConfig () {
         if (configLoading) {return;} // stop because there's already some attempt at loading (I think?)
-        console.log("fetching config file [" + time.toLocaleString() + "]");
+        log("fetching config file");
         configLoading = true;
         let response = await fetch("./config.json");
         let promise = response.json();
         promise.then(data => {
             if (data.updateId != config.updateId) { // go ahead and load a new config
-                console.log("new config file found!");
+                log("new config file found!");
                 newconfig = freshConfig();
                 // updateId
                 newconfig.updateId = data.updateId;
@@ -58,9 +63,12 @@
                 configFreshness = configMaxFreshness;
                 configMalloadCount = 0;
                 configLoading = false;
-                console.log("config file updated [" + time.toLocaleString() + "]");
+                log("config file updated");
             } else {
-                console.log("no updated needed");
+                log("no updated needed");
+                configFreshness = configMaxFreshness;
+                configMalloadCount = 0;
+                configLoading = false;
             }
         })
         .catch(reason => { // TODO: better UX for when error happens
@@ -157,20 +165,7 @@
         return (Math.trunc(t / 100) * 60) + (t % 100);
     }
 
-    // config file initial & periodic loading
-    onMount(async () => {
-          const intervalTime = setInterval(() => {
-                if (!configLoading) {
-                    if (configFreshness <= 0) {
-                        fetchConfig();
-                    } else {
-                        configFreshness--;
-                    }
-                }
-          }, 1000);
-    });
-
-    /*** START TIME ****/
+    /*** CLOCK/TIME ****/
     let time = new Date();
     let hours, minutes, seconds;
     // these automatically update when `time` changes, because of the `$:` prefix
@@ -182,12 +177,6 @@
     }
     // TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that.
     // REAL TODO: let there be a brief loading screen, cuz it takes a couple seconds to do initial config load, so there's some possibly color blipping anyway
-
-    onMount(async () => {
-          const intervalTime = setInterval(() => {
-              time = new Date();
-          }, 1000);
-    });
 
     function curMinute() {
         return (hours * 60) + minutes;
@@ -202,21 +191,8 @@
     }
     /*********************/
 
-    /**** START NOTIFICATIONS ****/
+    /**** NOTIFICATIONS ****/
     let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
-
-    onMount(async () => {
-        /* const intervalStatus = setInterval(() => {
-        let truetime = (hours * 60) + minutes;
-        let newPrimary = getStatus(truetime);
-        if (newPrimary != "" && newPrimary != primary) primary = newPrimary;
-        }, 1000);
-
-        return () => {
-            clearInterval(intervalTime);
-        }; */
-    });
-    /*********************/
 
     function getStatus(truetime) {
         let newStatus = "";
@@ -231,7 +207,39 @@
         }
         return newStatus;
     }
-  
+
+    /*** ONMOUNT ***/
+    onMount(async () => {
+        log("Starting app");
+        // TODO can we identify if we're on dev or prod, and change variables/visibility if on dev?
+
+        // start time
+         const intervalTime = setInterval(() => {
+            time = new Date();
+         }, 1000);
+         // config file
+         const intervalConfig = setInterval(() => {
+                if (!configLoading) {
+                    if (configFreshness <= 0) {
+                        fetchConfig();
+                    } else {
+                        configFreshness--;
+                    }
+                    //console.log("freshness: " + configFreshness.toString());
+                }
+          }, 1000);
+        // notifications
+        /* const intervalStatus = setInterval(() => {
+        let truetime = (hours * 60) + minutes;
+        let newPrimary = getStatus(truetime);
+        if (newPrimary != "" && newPrimary != primary) primary = newPrimary;
+        }, 1000);
+
+        return () => {
+            clearInterval(intervalTime);
+        }; */
+
+    });
       
   </script>
   <svelte:head>
@@ -241,7 +249,7 @@
   <Clock {time} color={clockColor} />
   <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
-<div style="clear:both"></div>
+  <div style="clear:both"></div>
 
   <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
 

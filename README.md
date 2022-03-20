@@ -41,16 +41,11 @@ When there's more than one of a given type active at a time, they rotate through
 Primary notifications are set at specific times. Secondary notifications are set at general time ranges and estimated intervals, to be randomly generated throughout the day as 10-minute (or otherwise specified) reminders that time out.
 
 ## TODOs
-(in no particular order)
+(in no particular order, doing this instead of GitHub issues)
 
- - Make these issues in GitHub
- - Make clock font better, as SVGs that scale perfectly with size/needs rather than a font file
- - Implement initial loading of config file & compiling of "time load"
- - Implement polling and updating config file
+ - Add splash screen to give system a chance to load w/o visual blips (plus incidator of site refresh)
  - Implement error handling: error getting JSON, error reading JSON, error compiling time load, error with connection (along with when error began)
  - Store time load in session, so it can be pulled from if page refreshes
- - Rotate time load
- - FIX: the glitch where it starts with server time zone and not local time zone for the first second, so it has that awkward flicker when starting up
  - Allow for multiple forms of the same notification (such as 4 ways of saying "get exercise" or "go to bed") that either randomly rotate throughout the specified time (for bed) or randomly get chosen for that duration (for exercise)
 
 ## Future ideas
