@@ -47,6 +47,7 @@ Primary notifications are set at specific times. Secondary notifications are set
  - Implement error handling: error getting JSON, error reading JSON, error compiling time load, error with connection (along with when error began)
  - Store time load in session, so it can be pulled from if page refreshes
  - Allow for multiple forms of the same notification (such as 4 ways of saying "get exercise" or "go to bed") that either randomly rotate throughout the specified time (for bed) or randomly get chosen for that duration (for exercise)
+ - DOCS: Add info about config file here
 
 ## Future ideas
 (in no particular order)
