@@ -103,8 +103,13 @@
                 }
             },
             {
-                "tag": "exercise",
-                "text": "Get some exercise soon?",
+                "tag": "health",
+                "text": [
+                    "Have you exerized recently?",
+                    "Have you had water recently?",
+                    "Did you take meds today?",
+                    "Have you had sunlight today?"
+                ],
                 "priority": 2,
                 "displayLogic": {
                     "startTime": 1100,

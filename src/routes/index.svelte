@@ -19,8 +19,6 @@
     let configMalloadCount = 0;
     let newconfig;
 
-    let errorMessage = "";
-
     function freshConfig() { // a blank config file with just white as the default clock color
         return {
             "updateId": "",
@@ -189,24 +187,8 @@
         //console.log(c);
         return c;
     }
-    /*********************/
 
     /**** NOTIFICATIONS ****/
-    let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
-
-    function getStatus(truetime) {
-        let newStatus = "";
-        if (truetime % 10 == 5) {
-            newStatus = "modulo 5 last: have you exerised recently?";
-        } else if (truetime %10 == 3) {
-            newStatus = "modulo 3 last: have you had water recently?";
-        } else if (truetime %10 == 8) {
-            newStatus = "modulo 8 last: did you take meds today?";
-        } else if (truetime %10 == 0) {
-            newStatus = "modulo 0 last: have you had sunlight today?";
-        }
-        return newStatus;
-    }
 
     /*** ONMOUNT ***/
     onMount(async () => {
@@ -241,16 +223,31 @@
 
     });
       
-  </script>
-  <svelte:head>
+</script>
+<svelte:head>
     <title>Time Crier</title>
-  </svelte:head>
+</svelte:head>
 
-  <Clock {time} color={clockColor} />
-  <!-- FAR FUTURE TODO: weather (current + upcoming) -->
-  
-  <div style="clear:both"></div>
+<!-- splash screen (TODO make work) -->
+<div class="splash">
+</div>
 
-  <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
+<!-- app -->
+<div class="app">
+    <Clock {time} color={clockColor} />
+    <!-- FAR FUTURE TODO: weather (current + upcoming) -->
+    <div style="clear:both"></div>
+    <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
+</div>
 
-  <Error />
+<!-- Error -->
+<Error />
+
+<style>
+    div.splash {
+        visibility: hidden;
+    }
+    div.app {
+        visibility: visible;
+    }
+</style>
