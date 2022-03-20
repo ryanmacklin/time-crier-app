@@ -184,7 +184,7 @@
         return (Math.trunc(t / 100) * 60) + (t % 100);
     }
     function curTime(baseline = timeBaseline) { // current time in truncated seconds, subtracting baseline to keep arrays from being whack
-        return Math.floor(time.getTime() - baseline / 1000);
+        return Math.floor((time.getTime() - baseline) / 1000);
     }
     function curTimeMinute(baseline = timeBaseline) {
         return Math.floor(curTime(timeBaseline) / 60);
