@@ -4,6 +4,8 @@
     import Notifications from './Notifications.svelte';
     import Error from './Error.svelte';
 
+    let innerWidth, innerHeight, outerHeight, outerWidth;
+
     /**** log ****/
     function log(message) {
         console.log("[" + time.toLocaleString() + "]  " + message);
@@ -175,6 +177,11 @@
         seconds = time.getSeconds();
         clockColor = getClockColor();
     }
+
+    // rudimentary setting of clock height
+    let clockHeight = 250;
+    $: clockHeight = ( (innerHeight / 2.5) > 250) ? (innerHeight / 2.5) : 250;
+
     // TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that.
     // REAL TODO: let there be a brief loading screen, cuz it takes a couple seconds to do initial config load, so there's some possibly color blipping anyway
 
@@ -245,12 +252,14 @@
   <svelte:head>
     <title>Time Crier</title>
   </svelte:head>
+  <svelte:window bind:innerWidth bind:outerWidth bind:innerHeight bind:outerHeight />
 
-  <Clock {time} color={clockColor} />
+  <Clock {time} color={clockColor} height={clockHeight} />
   <!-- FAR FUTURE TODO: weather (current + upcoming) -->
   
   <div style="clear:both"></div>
 
+  <!--
   <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
-
+-->
   <Error />
