@@ -181,6 +181,7 @@
 
     /*** CLOCK/TIME ****/
     let time = new Date();
+    let timeBaseline = time.getTime();
     let hours, minutes, seconds;
     // these automatically update when `time` changes, because of the `$:` prefix
     $: {
