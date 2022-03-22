@@ -14,14 +14,13 @@
     /**** GET CONFIG ****/
     let config = freshConfig();
     let defaultClockColor = "#FFFFFF";
-    let clockColor = defaultClockColor;
+    let clockColor;
+    $: clockColor = defaultClockColor;
     let configFreshness = 0;
     let configLoading = false;
-    let configMaxFreshness = 300; // 5 minutes for live; TODO can we make it happen more often in dev?
+    let configMaxFreshness = 10; // 300 seconds/5 minutes for live; TODO can we make it happen more often in dev?
     let configMalloadCount = 0;
     let newconfig;
-
-    let errorMessage = "";
 
     function freshConfig() { // a blank config file with just white as the default clock color
         return {
@@ -31,7 +30,9 @@
                 "default": "",
                 "schedule": []
             },
-            "notifications": { 
+            "notifications": {
+                "logic": {}, 
+                "schedule": []
             }
         };
     }
@@ -60,11 +61,18 @@
                     newconfig.clockColors.schedule = calculateColorSchedule(data.clockColors.schedule);
                 }
 
+                // assign notification logic & compile upcoming time
+                if (data.notifications) {
+                    newconfig.notifications.logic = data.notifications;
+                }
+
                 // Okay, we can replace the config now
                 config = newconfig;
                 configFreshness = configMaxFreshness;
                 configMalloadCount = 0;
                 configLoading = false;
+                // And set the color now
+                clockColor = getClockColor();
                 log("config file updated");
             } else {
                 log("no updated needed");
@@ -78,7 +86,7 @@
             let m = reason.message;
             m = "Config file: " + reason.message + " (" + configMalloadCount + " failed load) [" + time.toLocaleString() + "]";
             console.error(m);
-            errorMessage = m;
+            //errorMessage = m;
             configFreshness = 15; // try again in 15 seconds
             configLoading = false;
         });
@@ -123,6 +131,7 @@
         return res;
     }
 
+    // color calc functions
     function getColor(x, col = config) {
         // TODO handle error!
         if (x.substring(0,1) == "%") {
@@ -140,7 +149,6 @@
         }
         return x; // doesn't need transation
     }
-
     function getColorComponenets(x) {
         // this assumes 6-digit hex code (with or without # sign)
         let r, g, b;
@@ -158,6 +166,7 @@
         return {"r": r, "g": g, "b": b};
     }
 
+    // time calc functions
     function miltime2minutes(t) {
         if (!Number.isInteger(t)) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
         let hours = Math.trunc(t / 100);
@@ -166,9 +175,13 @@
         if (minutes > 59 || minutes < 0) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
         return (Math.trunc(t / 100) * 60) + (t % 100);
     }
+    function curTime(baseline = timeBaseline) { // current time in truncated seconds, subtracting baseline to keep arrays from being whack
+        return Math.floor((time.getTime() - baseline) / 1000);
+    }
 
     /*** CLOCK/TIME ****/
     let time = new Date();
+    let timeBaseline = time.getTime();
     let hours, minutes, seconds;
     // these automatically update when `time` changes, because of the `$:` prefix
     $: {
@@ -177,7 +190,7 @@
         seconds = time.getSeconds();
         clockColor = getClockColor();
     }
-
+  
     // rudimentary setting of clock height
     let clockHeight = 250;
     $: clockHeight = ( (innerHeight / 2.5) > 250) ? (innerHeight / 2.5) : 250;
@@ -185,44 +198,32 @@
     // TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that.
     // REAL TODO: let there be a brief loading screen, cuz it takes a couple seconds to do initial config load, so there's some possibly color blipping anyway
 
-    function curMinute() {
+    function curMinuteOfDay() {
         return (hours * 60) + minutes;
+    }
+    function curTimeMinute(baseline = timeBaseline) {
+        return Math.floor(curTime(timeBaseline) / 60);
     }
 
     function getClockColor() {
         // not bothering with tags right now, even though they're in the config as placeholders. so this is pretty simple
-        let c = config.clockColors.schedule[curMinute()] || config.clockColors.default || defaultClockColor;
-        //console.log(curMinute());
+        let c = config.clockColors.schedule[curMinuteOfDay()] || config.clockColors.default || defaultClockColor;
+        //console.log(curMinuteOfDay());
         //console.log(c);
         return c;
     }
-    /*********************/
 
     /**** NOTIFICATIONS ****/
-    let primary = "modulo init: can you do 5 minutes of exercise?", newPrimary;
-
-    function getStatus(truetime) {
-        let newStatus = "";
-        if (truetime % 10 == 5) {
-            newStatus = "modulo 5 last: have you exerised recently?";
-        } else if (truetime %10 == 3) {
-            newStatus = "modulo 3 last: have you had water recently?";
-        } else if (truetime %10 == 8) {
-            newStatus = "modulo 8 last: did you take meds today?";
-        } else if (truetime %10 == 0) {
-            newStatus = "modulo 0 last: have you had sunlight today?";
-        }
-        return newStatus;
-    }
 
     /*** ONMOUNT ***/
     onMount(async () => {
         log("Starting app");
         // TODO can we identify if we're on dev or prod, and change variables/visibility if on dev?
 
-        // start time
+        // start time + clock color poll
          const intervalTime = setInterval(() => {
             time = new Date();
+            clockColor = getClockColor();
          }, 1000);
          // config file
          const intervalConfig = setInterval(() => {
@@ -236,30 +237,44 @@
                 }
           }, 1000);
         // notifications
-        /* const intervalStatus = setInterval(() => {
-        let truetime = (hours * 60) + minutes;
-        let newPrimary = getStatus(truetime);
-        if (newPrimary != "" && newPrimary != primary) primary = newPrimary;
-        }, 1000);
+        const intervalChanges = setInterval(() => {
+
+        }, 30000);
 
         return () => {
             clearInterval(intervalTime);
-        }; */
+            clearInterval(intervalConfig);
+            clearInterval(intervalChanges);
+        };
 
     });
       
-  </script>
-  <svelte:head>
+</script>
+<svelte:head>
     <title>Time Crier</title>
-  </svelte:head>
+</svelte:head>
   <svelte:window bind:innerWidth bind:outerWidth bind:innerHeight bind:outerHeight />
 
-  <Clock {time} color={clockColor} height={clockHeight} />
-  <!-- FAR FUTURE TODO: weather (current + upcoming) -->
-  
-  <div style="clear:both"></div>
+<!-- splash screen (TODO make work) -->
+<div class="splash">
+</div>
 
-  <!--
-  <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
--->
-  <Error />
+<!-- app -->
+<div class="app">
+    <Clock {time} color={clockColor} height={clockHeight} />
+    <!-- FAR FUTURE TODO: weather (current + upcoming) -->
+    <div style="clear:both"></div>
+    <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
+</div>
+
+<!-- Error -->
+<Error />
+
+<style>
+    div.splash {
+        visibility: hidden;
+    }
+    div.app {
+        visibility: visible;
+    }
+</style>

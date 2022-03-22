@@ -47,12 +47,14 @@ Primary notifications are set at specific times. Secondary notifications are set
  - Implement error handling: error getting JSON, error reading JSON, error compiling time load, error with connection (along with when error began)
  - Store time load in session, so it can be pulled from if page refreshes
  - Allow for multiple forms of the same notification (such as 4 ways of saying "get exercise" or "go to bed") that either randomly rotate throughout the specified time (for bed) or randomly get chosen for that duration (for exercise)
+ - DOCS: Add info about config file here
 
 ## Future ideas
 (in no particular order)
 
  - Custom SVG emojis, like "{R}" meaning "draw a gnome for a Ryan notification" or "{J}" meaning "draw a squirrel for a Jen notification"
  - Show current and upcoming local weather (night during day, next day during night)
+   - Allow notifications that take weather into account, namely "go get some sunshine" only if it's sunny
  - Dismissing periodic notifications like exercises, to say "yes I did this today, I don't need to be reminded again later today"
  - Allow for different types of primary and secondary notifications, such as alerts (that also change the clock color, overriding while that alert is active)
  - Poll a second "critical alert" JSON file that adds new alerts that need to happen but don't otherwise change the ongoing config
