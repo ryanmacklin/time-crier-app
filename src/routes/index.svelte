@@ -4,15 +4,7 @@
     import Notifications from './Notifications.svelte';
     import Error from './Error.svelte';
 
-    /*** CLOCK/TIME as first thing ****/
-    let time = new Date();
-    let timeBaseline = time.getTime();
-    let hours, minutes, seconds;
-    $: {
-        hours = time.getHours();
-        minutes = time.getMinutes();
-        seconds = time.getSeconds();
-    }
+    let innerWidth, innerHeight, outerHeight, outerWidth;
 
     /**** log ****/
     function log(message) {
@@ -186,11 +178,30 @@
     function curTime(baseline = timeBaseline) { // current time in truncated seconds, subtracting baseline to keep arrays from being whack
         return Math.floor((time.getTime() - baseline) / 1000);
     }
-    function curTimeMinute(baseline = timeBaseline) {
-        return Math.floor(curTime(timeBaseline) / 60);
+
+    /*** CLOCK/TIME ****/
+    let time = new Date();
+    let hours, minutes, seconds;
+    // these automatically update when `time` changes, because of the `$:` prefix
+    $: {
+        hours = time.getHours();
+        minutes = time.getMinutes();
+        seconds = time.getSeconds();
+        clockColor = getClockColor();
     }
+  
+    // rudimentary setting of clock height
+    let clockHeight = 250;
+    $: clockHeight = ( (innerHeight / 2.5) > 250) ? (innerHeight / 2.5) : 250;
+
+    // TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that.
+    // REAL TODO: let there be a brief loading screen, cuz it takes a couple seconds to do initial config load, so there's some possibly color blipping anyway
+
     function curMinuteOfDay() {
         return (hours * 60) + minutes;
+    }
+    function curTimeMinute(baseline = timeBaseline) {
+        return Math.floor(curTime(timeBaseline) / 60);
     }
 
     function getClockColor() {
@@ -241,6 +252,7 @@
 <svelte:head>
     <title>Time Crier</title>
 </svelte:head>
+  <svelte:window bind:innerWidth bind:outerWidth bind:innerHeight bind:outerHeight />
 
 <!-- splash screen (TODO make work) -->
 <div class="splash">
@@ -248,7 +260,7 @@
 
 <!-- app -->
 <div class="app">
-    <Clock {time} color={clockColor} />
+    <Clock {time} color={clockColor} height={clockHeight} />
     <!-- FAR FUTURE TODO: weather (current + upcoming) -->
     <div style="clear:both"></div>
     <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
