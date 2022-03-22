@@ -1,6 +1,7 @@
 <script>
-	export let primary;
-	export let secondary;
+    import Notification from './Notification.svelte';
+	export let primary = null;
+	export let secondary = null;
 	/* INTENDED LOGIC
 
 		1) when there's a primary notice, that should be prominenet and in a "primary" style
@@ -17,27 +18,49 @@
 		5) The transitions shouldn't be jarring. There should be fade in/outs, unless the style or code says "no, make this transition jarring" (like automatically with alert)
 		6) Later, this should handle implementing icons (likely as stored SVGs) like "{garbage}" for garbage can or "{alert}" for alert triangle
 	*/
+	/*
+	            {
+                "tag": "mortgage",
+                "text": "Pay mortgage!",
+                "priority": 0,
+                "displayLogic": {
+                    "dayMonth": -1,
+                    "startTime": 1000,
+                    "endTime": 2300,
+                    "type": "continuous"
+                }
+            }
+	*/
 
+	let primaryText = "";
+	let secondaryText = "";
+
+	// this is eventually a function to handle both primary and secondary
+	if (primary !== null && primary.text && (typeof primary.text === "string")) { // is an object value, at least one we'll attempt to trust
+		primaryText = primary.text
+		// other stuff for entire object
+	} else if (typeof primary === "string") { // is a text value
+		primaryText = primary;
+		// other stuff for just text
+	} else { // isn't anything
+		primaryText = "";
+	}
 	
 </script>
 
-<p class="primary sleep">
-	{primary}
-</p>
-<p class="secondary health">
-	{secondary}
-</p>
+<div class="notifications">
+	<!-- these components don't handle animation/transition decision logic, just displays what it's told, and maybe simple ani/trans execution -->
+	<Notification text={primaryText} />
+	<Notification text={secondaryText} />
+</div>
 
 <style>
-	p.primary {
-		font-size: 5rem; /* 60px */
-		line-height: 1;
-		color: white;
-	}
-	p.secondary {
+	div.notifications {
+		margin-top: 1em;
+        /* defaults */
+		font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 		font-size: 3.75rem; /* 60px */
 		line-height: 1;
-		margin-top: 1em;
 		color: white;
 	}
 
