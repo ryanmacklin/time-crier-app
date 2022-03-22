@@ -261,7 +261,6 @@
             function sleep(ms) {
                return new Promise(resolve => setTimeout(resolve, ms));
             }
-            showLoadingScreen = false;
             let divis = 1 / 50;
             let pause = 15;
             // fade out loading
@@ -279,11 +278,11 @@
             while (p <= 1) {
                 loadingStyles["core-opacity"] = p.toString();
                 p += divis;
+                showLoadingScreen = (p < 0.8); // consider the loading screen ready for execution at 80%
                 await sleep(pause);
             }
             loadingStyles["core-opacity"] = "1";
             loadingStyles["core-display"] = "block";
-
         }, loadingTime * 1000);
 
         return () => {
@@ -291,16 +290,17 @@
             clearInterval(intervalConfig);
             clearInterval(intervalChanges);
         };
-
     });
 
     let notificationPrimary = null;
     // TEMP CODE just to load a notification in regardless of time
     $: {
-        try {
-            notificationPrimary = config.notifications.logic.primary[0];
-        } catch {
-            // nothing
+        if (!showLoadingScreen) {
+            try {
+                notificationPrimary = config.notifications.logic.primary[0];
+            } catch {
+                // nothing
+            }
         }
     };
 </script>

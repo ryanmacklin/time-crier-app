@@ -2,6 +2,7 @@
     import Notification from './Notification.svelte';
 	export let primary = null;
 	export let secondary = null;
+
 	/* INTENDED LOGIC
 
 		1) when there's a primary notice, that should be prominenet and in a "primary" style
@@ -51,6 +52,7 @@
 		}
 	}
 	
+	secondary = secondary; // just to get right of that warning for now
 </script>
 
 <div class="notifications">
@@ -69,7 +71,7 @@
 		color: white;
 	}
 
-	p.alert {
+	/* p.alert {
 		color: rgb(252, 59, 59);
 	}
 
@@ -79,5 +81,5 @@
 
 	p.health {
 		color: rgb(105, 209, 122);
-	}
+	} */
 </style>
