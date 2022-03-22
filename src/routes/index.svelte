@@ -1,10 +1,25 @@
 <script>
     import { onMount } from 'svelte';
+        
     import Clock from './Clock.svelte';
     import Notifications from './Notifications.svelte';
     import Error from './Error.svelte';
 
     let innerWidth, innerHeight, outerHeight, outerWidth;
+
+    // loading screen stuff
+    let showLoadingScreen = true;
+    let loadingStyles = {
+        'splash-opacity': "1",
+        'splash-display': 'block',
+        'core-opacity': "0",
+        'core-display': 'none',
+    };
+    let cssVarLoading = "";
+    let loadingTime = 1; // in seconds
+    $: cssVarLoading = Object.entries(loadingStyles)
+        .map(([key, value]) => `--${key}:${value}`)
+        .join(';');
 
     /**** log ****/
     function log(message) {
@@ -239,7 +254,37 @@
         // notifications
         const intervalChanges = setInterval(() => {
 
-        }, 30000);
+        }, 1000);
+
+        // finally, take loading screen off after [loadingTime] seconds
+        setTimeout(async function() {
+            function sleep(ms) {
+               return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            showLoadingScreen = false;
+            let divis = 1 / 50;
+            let pause = 15;
+            // fade out loading
+            let p = 1;
+            while (p >= 0.2) {
+                loadingStyles["splash-opacity"] = p.toString();
+                p -= divis;
+                await sleep(pause);
+            }
+            loadingStyles["splash-opacity"] = "0";
+            loadingStyles["splash-display"] = "none";
+            // fade in core
+            loadingStyles["core-display"] = "block";
+            p = 0.2;
+            while (p <= 1) {
+                loadingStyles["core-opacity"] = p.toString();
+                p += divis;
+                await sleep(pause);
+            }
+            loadingStyles["core-opacity"] = "1";
+            loadingStyles["core-display"] = "block";
+
+        }, loadingTime * 1000);
 
         return () => {
             clearInterval(intervalTime);
@@ -248,33 +293,51 @@
         };
 
     });
-      
+
+    let notificationPrimary = null;
+    // TEMP CODE just to load a notification in regardless of time
+    $: {
+        try {
+            notificationPrimary = config.notifications.logic.primary[0];
+        } catch {
+            // nothing
+        }
+    };
 </script>
 <svelte:head>
     <title>Time Crier</title>
 </svelte:head>
-  <svelte:window bind:innerWidth bind:outerWidth bind:innerHeight bind:outerHeight />
-
+<svelte:window bind:innerWidth bind:outerWidth bind:innerHeight bind:outerHeight />
+<div class="all" style="{cssVarLoading}">
 <!-- splash screen (TODO make work) -->
 <div class="splash">
+        loading!
 </div>
 
 <!-- app -->
-<div class="app">
+<div class="core" >
     <Clock {time} color={clockColor} height={clockHeight} />
     <!-- FAR FUTURE TODO: weather (current + upcoming) -->
     <div style="clear:both"></div>
-    <Notifications primary="Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>
+    <Notifications primary={notificationPrimary} secondary="Can you do 5 minutes of exercise soon?"></Notifications>
+    <!--<Notifications primary="[static] Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>-->
 </div>
 
 <!-- Error -->
 <Error />
-
+</div>
 <style>
     div.splash {
-        visibility: hidden;
+        display: var(--splash-display, "block");
+        opacity: var(--splash-opacity, "1");
+
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        font-size: 10rem;
+        text-align: center;
+        margin-top: 2em;
     }
-    div.app {
-        visibility: visible;
+    div.core {
+        display: var(--core-display, "none");
+        opacity: var(--core-opacity, "0");
     }
 </style>

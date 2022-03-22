@@ -1,16 +1,23 @@
 <script>
     export let text = "";
     export let style = "";
+    let existingText = "";
 
-    let show = (text != "");
+    let show = false;
+
+    $: {
+        if (existingText != text) {
+            // text changes
+            existingText = text;
+        }
+        show = (existingText != "");
+    }
 </script>
 {#if show}
-<p style="{style}">
-	{text}
-</p>
+<div style="{style}">{existingText}</div>
 {/if}
 <style>
-    p.notNow {
+    div.notNow {
         font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
         font-size: 5rem; /* 60px */
         line-height: 1;

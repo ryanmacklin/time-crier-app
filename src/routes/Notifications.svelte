@@ -32,18 +32,23 @@
             }
 	*/
 
+
 	let primaryText = "";
 	let secondaryText = "";
 
 	// this is eventually a function to handle both primary and secondary
-	if (primary !== null && primary.text && (typeof primary.text === "string")) { // is an object value, at least one we'll attempt to trust
-		primaryText = primary.text
-		// other stuff for entire object
-	} else if (typeof primary === "string") { // is a text value
-		primaryText = primary;
-		// other stuff for just text
-	} else { // isn't anything
-		primaryText = "";
+	$:{ 
+		if (primary !== null && primary !== undefined) {
+			if (typeof primary.text === "string") { // is an object value, at least one we'll attempt to trust
+				primaryText = primary.text;
+				// other stuff for entire object
+			} else if (typeof primary === "string") { // is a text value
+				primaryText = primary;
+				// other stuff for just text
+			}
+		} else {
+			primaryText = "";
+		}
 	}
 	
 </script>
