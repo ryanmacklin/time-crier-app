@@ -8,34 +8,96 @@ import { Time, General } from '$lib/scripts/utils.cjs';
 
 export class NotificationsClass {
     constructor() {
-        let wsSchedule = []; // schedule workspace FOR PRIMARY
-        let wsNotifications = []; // notifications workspace (for primary and secondary)
-        let wsNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
-        let time = new Time;
+        let ready = false;
+
+        this.primarySchedule = []; // schedule workspace FOR PRIMARY
+        this.primaryNotifications = []; // notifications workspace (for primary and secondary)
+        this.primaryNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
+        this.secondarySchedule = []; // schedule workspace FOR PRIMARY
+        this.secondaryNotifications = []; // notifications workspace (for primary and secondary)
+        this.secondaryNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
 
         // look-ahead = 3 hours ---- not in scope of this experiment
         // compile = 6 hours
         // that should allow for a relatively sizable internet outage to happen without interruption
-        let startCompile = 0; // 0 minutes from timeBaseline
-        let endCompile = 360; // 6 hours (3600 minutes) from timeBaseline
+        this.startCompile = 0; // 0 minutes from timeBaseline
+        this.endCompile = 360; // 6 hours (3600 minutes) from timeBaseline
     }
 
-    compileNotificationSchedule(conf) {
-        let schedule = [];
-        let thisMinuteOfDay = this.time.minuteOfDay;
-        let exportSchedule = [];
+    // run this on start/config update
+    compileSchedule(config) {
+        let primary = this.compileScheduleSection(config.primary);
+        this.primarySchedule = primary.schedule;
+        this.primaryNotifications = primary.notifications;
+        this.primaryTagIndex = primary.tagIndex;
 
-        conf.forEach(x => {
-            console.log(x);
+        let secondary = this.compileScheduleSection(config.secondary);
+        this.secondarySchedule = secondary.schedule;
+        this.secondaryNotifications = secondary.notifications;
+        this.secondaryTagIndex = secondary.tagIndex;
 
+        return true; // later, return if it actually works/doesn't error
+    }
+
+    // run this when the schedule needs updating
+    updateScheduleCheck() {
+        // if we're running out of time, let's do an update
+        if (0) {
+            this.doUpdateSchdule();
+        }
+    }
+
+    doUpdateSchdule() {
+        // start with primary
+        let primary = this.updateScheduleSection(this.primaryNotifications, this.primarySchedule);
+        if (primary[Time.dayIdOffset(-2)]) {
+            // delete this, it's two days old
+        }
+        let secondary = this.updateScheduleSection(this.secondaryNotifications, this.secondarySchedule);
+        if (secondary[Time.dayIdOffset(-2)]) {
+            // delete this, it's two days old
+        }
+
+        // everything good? then update working stuff
+        this.primarySchedule = primary;
+        this.secondarySchedule = secondary;
+    }
+
+    // run this when you need this moment's notifiations
+    currentNotifications() {
+
+    }
+
+    // internals
+    compileScheduleSection(section) {
+        let notifications = []; // notifications workspace (for primary and secondary)
+        let tagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
+
+        section.forEach(x => {
             // TODO this should be the other way, where the notifications are already in an index array, and this loops with that index
             // cuz that's how continual compiling should work
             // but this works for the moment
-            let index = this.wsNotifications.length; // *** TODO needs to be made something that can be generated ***
-            this.wsNotifications[index] = x;
-            this.wsNotificationTagIndex[x.tag] = index; // link tag to index, without changing inherent priority order
+            let index = notifications.length; // *** TODO needs to be made something that can be generated ***
+            notifications[index] = x;
+            tagIndex[x.tag] = index; // link tag to index, without changing inherent priority order
+        });
 
-            let tr = this.time.getTimeRange(x.displayLogic.startTime, x.displayLogic.endTime, thisMinuteOfDay);
+        let schedule = this.updateScheduleSection(notifications);
+
+        return {
+            "schedule": schedule,
+            "notifications": notifications,
+            "tagIndex": tagIndex
+        };
+    }
+
+    updateScheduleSection (wsNotifications, exportSchedule = []) {
+        let wsSchedule = []; // schedule workspace
+        let time = new Time;
+        let thisMinuteOfDay = time.minuteOfDay;
+        for (let a = 0; a < wsNotifications.length; a++) {
+            let x = wsNotifications[a];
+            let tr = time.getTimeRange(x.displayLogic.startTime, x.displayLogic.endTime, thisMinuteOfDay);
 
             // figure out if this needs to be done
             let doIt = true;
@@ -63,37 +125,35 @@ export class NotificationsClass {
             // this generates a larger time slice. we'll narrow down later
             if (doIt) {
                 //log("start: " + miltime2minutes(x.displayLogic.startTime) + " || end: " + miltime2minutes(x.displayLogic.endTime));
-
                 // don't bother with looking at variance here; we'll handle that in Notifications
                 for (let i = tr.startTime; i <= tr.endTime; i++) {
-                    this.wsSchedule[i] = addNotificationToObject(this.wsSchedule[i], index);
+                    wsSchedule[i] = this.addNotificationToObject(wsSchedule[i], a);
                 }
             }
 
             // here's where we narrow our compiled window down to X hours, and convert it to using day IDs for export
-            for (let i = thisMinuteOfDay + startCompile; i <= thisMinuteOfDay + endCompile; i++) {
-                if (this.wsSchedule[i]) {
+            for (let i = thisMinuteOfDay + this.startCompile; i <= thisMinuteOfDay + this.endCompile; i++) {
+                if (wsSchedule[i]) {
                     let d = time.dayIdOffset(Math.floor(i / Time.minutesInDay));
                     let m = i % Time.minutesInDay;
                     if (!Array.isArray(exportSchedule[d])) exportSchedule[d] = [];
-                    exportSchedule[d][m] = this.wsSchedule[i];
+                    exportSchedule[d][m] = wsSchedule[i];
                 }
             }
-
-            // schedule ready for export now
-            console.log(getNotificationByName("sleep"));
-        });
+        }
+        return exportSchedule;
     }
 
+    /*
     getNotificationByName(name) {
         if (name in this.wsNotificationTagIndex) {
-            if (this.wsNotificationTagIndex[name] in wsNotifications) {
-                return this.wsNotifications[wsNotificationTagIndex[name]];
+            if (this.wsNotificationTagIndex[name] in this.wsNotifications) {
+                return this.wsNotifications[this.wsNotificationTagIndex[name]];
             }
         }
         General.log ("Issue: can't find notification by name of \"" + name + "\"");
         return null;
-    }
+    } */
 
 
     // TODO allow for multiple messages by checking to see if obj is a collection that is or isn't empty

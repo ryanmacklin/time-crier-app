@@ -9,6 +9,7 @@
     import { Time, General } from '$lib/scripts/utils.cjs';
     import { Config } from '$lib/scripts/configLoad.cjs';
     import { ClockClass } from '$lib/scripts/clockClass.cjs';
+    import { NotificationsClass } from '$lib/scripts/notificationsClass.cjs';
 
     let innerWidth, innerHeight, outerHeight, outerWidth;
 
@@ -28,10 +29,12 @@
 
 
 
-    let config = new Config();
+    let config = new Config;
+    let nProcessor = new NotificationsClass;
 
     /*** CLOCK/TIME ****/
     let clockColor = ClockClass.defaultColor;
+    let activeNotifications;
     let time = new Time();  
     // rudimentary setting of clock height
     let clockHeight = 250;
@@ -48,12 +51,14 @@
          const intervalTime = setInterval(() => {
             time._time = time.tick(); // warning: this is hacky way to make the time update
             clockColor = config.currentClockColor(time.minuteOfDay); // is in top
+            activeNotifications = nProcessor.currentNotifications;
          }, 1000);
          // config file
          const intervalConfig = setInterval(() => {
              if (config.fetchIfStale()) {
                 // update whatever bound vars here
                 // deal with notification scheduling
+                nProcessor.compileSchedule(config.data.notifications);
             }
           }, 1000);
         // notifications
@@ -108,9 +113,6 @@
             }
         }
     };
-
-    let clockTime;
-    $: { clockTime = time.now; }
 </script>
 <svelte:head>
     <title>Time Crier</title>

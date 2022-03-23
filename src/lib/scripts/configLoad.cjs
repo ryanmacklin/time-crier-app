@@ -70,7 +70,7 @@ export class Config {
                     newconfig.clockColors.schedule = this.calculateColorSchedule(data.clockColors.schedule, newconfig);
                 }
 
-                // assign notification logic & compile upcoming time
+                // assign notification logic; compiling happes outside of here
                 if (data.notifications) {
                     newconfig.notifications.logic = data.notifications;
                 }

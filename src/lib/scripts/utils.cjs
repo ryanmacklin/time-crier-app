@@ -81,6 +81,15 @@ export class Time {
     }
 
     // warning: dayId is technically messy, just to create unique rotating IDs for each day
+    // static one is based on current time, not stored time
+    static get dayId() {return Time.dayIdOffset()}
+    static dayIdOffset(offset = 0) { // was getDayId
+        let date = new Date();
+        if (offset != 0) date.setDate(date.getDate() + offset);
+        let month = date.getMonth();
+        let day = date.getDate();
+        return (month * 40) + day;
+    }
     get dayId() {return this.dayIdOffset()}
     dayIdOffset(offset = 0) { // was getDayId
         let date = new Date(this._time);
