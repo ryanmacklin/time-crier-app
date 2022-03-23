@@ -22,7 +22,7 @@
         'core-display': 'none',
     };
     let cssVarLoading = "";
-    let loadingScreenTimeout = 1; // in seconds
+    let loadingScreenTimeout = 0.5; // in seconds
     $: cssVarLoading = Object.entries(loadingStyles)
         .map(([key, value]) => `--${key}:${value}`)
         .join(';');
@@ -34,7 +34,8 @@
 
     /*** CLOCK/TIME ****/
     let clockColor = ClockClass.defaultColor;
-    let activeNotifications;
+    let activePrimary = [];
+    let activeSecondary = [];
     let time = new Time();  
     // rudimentary setting of clock height
     let clockHeight = 250;
@@ -42,28 +43,12 @@
 
     /**** POLLING ****/
 
-    async function update() {
-        console.log('hi');
-        let promise = new Promise(function(resolve, reject) {
-            resolve(config.fetchIfStale())
-        })
-        promise.then(
-            result => {
-                console.log(result);
-            if (result) {
-                console.log('bye');
-            // update whatever bound vars here
-            // deal with notification scheduling
-            nProcessor.compileSchedule(config.data.notifications);
-            console.log(config.data.notifications);
-
-            }}
-        );
+    function update() {
+        config.fetchIfStale();
     }
     function tick() {
         time._time = time.tick(); // warning: this is hacky way to make the time update
         clockColor = config.currentClockColor(time.minuteOfDay); // is in top
-        activeNotifications = nProcessor.currentNotifications;
     }
 
     /*** ONMOUNT ***/
@@ -81,46 +66,65 @@
          // config file
          const intervalConfig = setInterval(() => {
             update();
-            console.log(config.freshnessCount);
+            //console.log(config.freshnessCount);
+            if (config.updateNotifications) {
+                config.updateNotifications = false;
+                nProcessor.compileSchedule(config.data.notifications);
+            }
+            if (nProcessor.ready) {
+                activePrimary = nProcessor.currentPrimary;
+                activeSecondary = nProcessor.currentSecondary;
+            }
           }, 1000);
         // notifications
-        /*const intervalChanges = setInterval(() => {
-
-        }, 1000);*/
+        const intervalUpdates = setInterval(() => {
+            nProcessor.updateScheduleCheck();
+        }, 60000);
 
         // finally, take loading screen off after [loadingTime] seconds
-        setTimeout(async function() {
-            function sleep(ms: number) {
-               return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            let divis = 1 / 50;
-            let pause = 15;
-            // fade out loading
-            let p = 1;
-            while (p >= 0.2) {
-                loadingStyles["splash-opacity"] = p.toString();
-                p -= divis;
-                await sleep(pause);
-            }
-            loadingStyles["splash-opacity"] = "0";
-            loadingStyles["splash-display"] = "none";
-            // fade in core
-            loadingStyles["core-display"] = "block";
-            p = 0.2;
-            while (p <= 1) {
-                loadingStyles["core-opacity"] = p.toString();
-                p += divis;
-                showLoadingScreen = (p < 0.8); // consider the loading screen ready for execution at 80%
-                await sleep(pause);
-            }
-            loadingStyles["core-opacity"] = "1";
-            loadingStyles["core-display"] = "block";
-        }, loadingScreenTimeout * 1000);
+        if (loadingScreenTimeout == 0) {
+            loadingStyles = {
+                'splash-opacity': "0",
+                'splash-display': 'none',
+                'core-opacity': "1",
+                'core-display': 'block',
+            };
+            return;
+        } else {
+            setTimeout(async function() {
+
+                function sleep(ms: number) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+                }
+                let divis = 1 / 50;
+                let pause = 15;
+                // fade out loading
+                let p = 1;
+                while (p >= 0.2) {
+                    loadingStyles["splash-opacity"] = p.toString();
+                    p -= divis;
+                    await sleep(pause);
+                }
+                loadingStyles["splash-opacity"] = "0";
+                loadingStyles["splash-display"] = "none";
+                // fade in core
+                loadingStyles["core-display"] = "block";
+                p = 0.2;
+                while (p <= 1) {
+                    loadingStyles["core-opacity"] = p.toString();
+                    p += divis;
+                    showLoadingScreen = (p < 0.8); // consider the loading screen ready for execution at 80%
+                    await sleep(pause);
+                }
+                loadingStyles["core-opacity"] = "1";
+                loadingStyles["core-display"] = "block";
+            }, loadingScreenTimeout * 1000);
+        }
 
         return () => {
             clearInterval(intervalTime);
             clearInterval(intervalConfig);
-            //clearInterval(intervalChanges);
+            clearInterval(intervalUpdates);
         };
     });
 

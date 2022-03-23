@@ -8,7 +8,9 @@ import { Time, General } from '$lib/scripts/utils.cjs';
 
 export class NotificationsClass {
     constructor() {
-        let ready = false;
+        this.ready = false;
+        this.refreshTime = null;
+        this.refreshPause = false;
 
         this.primarySchedule = []; // schedule workspace FOR PRIMARY
         this.primaryNotifications = []; // notifications workspace (for primary and secondary)
@@ -22,11 +24,11 @@ export class NotificationsClass {
         // that should allow for a relatively sizable internet outage to happen without interruption
         this.startCompile = 0; // 0 minutes from timeBaseline
         this.endCompile = 360; // 6 hours (3600 minutes) from timeBaseline
+        this.refreshWait = 1; // 5 hours from timeBaseline
     }
 
     // run this on start/config update
     compileSchedule(config) {
-        console.log(config);
         let primary = this.compileScheduleSection(config.primary);
         this.primarySchedule = primary.schedule;
         this.primaryNotifications = primary.notifications;
@@ -37,14 +39,29 @@ export class NotificationsClass {
         this.secondaryNotifications = secondary.notifications;
         this.secondaryTagIndex = secondary.tagIndex;
 
+        this.refreshTime = this.newRefreshTime();
+
+        this.ready = true;
         return true; // later, return if it actually works/doesn't error
+    }
+
+    newRefreshTime() {
+        let d = new Date;
+        return new Date(d.setMinutes(d.getMinutes() + this.refreshWait));
     }
 
     // run this when the schedule needs updating
     updateScheduleCheck() {
         // if we're running out of time, let's do an update
-        if (0) {
+        if ((this.refreshTime !== null) && (this.refreshTime < new Date()) && !this.refreshPause) {
+            General.log("Scheduled notification compile")
+            this.refreshPause = true; // turn this off for now
+
             this.doUpdateSchdule();
+
+            
+            this.refreshTime = this.newRefreshTime();
+            this.refreshPause = false; // ready to start again
         }
     }
 
@@ -65,8 +82,20 @@ export class NotificationsClass {
     }
 
     // run this when you need this moment's notifiations
-    currentNotifications() {
-
+    get currentNotifications() {
+        if (!this.ready) return null;
+        return {
+            "primary": this.primarySchedule,
+            "schedule": this.secondarySchedule
+        };
+    }
+    get currentPrimary() {
+        if (!this.ready) return null;
+        return this.primarySchedule;
+    }
+    get currentSecondary() {
+        if (!this.ready) return null;
+        return this.secondarySchedule;
     }
 
     // internals

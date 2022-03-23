@@ -28,6 +28,7 @@ export class Config {
         this.freshnessCount = 0;
         this.configFile = "/config.json";
         //this.newconfig = Config.freshConfig;
+        this.updateNotifications = false;
 
         this.configMaxFreshness = 10; // 300 seconds/5 minutes for live; TODO can we make it happen more often in dev?
         this.configMalloadCount = 0;
@@ -35,15 +36,16 @@ export class Config {
 
     get data() {return this.config}
 
-    async fetchIfStale() { // assumes being called per second
+    fetchIfStale() { // assumes being called per second
         if (!this.loading) {
             if (this.freshnessCount <= 0) {
-                // TODO NEED TO UNFUCK THIS
-                console.log("sadkfjalsdkjflkasdjflks");
-                
-                let y = await this.fetch();
-                console.log(y);
-                return y;
+                // warning: there has to be another way that's cleaner than this
+                let status = () => new Promise((resolve, reject) => {
+                    if(this.fetch()) return resolve(true);
+                });
+                return status().then( status => {
+                    return status;
+                });
             } else {
                 this.freshnessCount--;
             }
@@ -83,6 +85,7 @@ export class Config {
 
                 // Okay, we can replace the config now
                 this.config = newconfig;
+                this.updateNotifications = true;
                 this.freshnessCount = Config.maxFreshness;
                 this.configMalloadCount = 0;
                 this.loading = false;

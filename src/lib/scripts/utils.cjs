@@ -33,6 +33,9 @@ export class Time {
         return this._time;
     }
 
+    static minuteOfDay() { // was "curMinutesOfDay"
+        return (new Time).minuteOfDay;
+    }
     get minuteOfDay() { // was "curMinutesOfDay"
         return (this.hours * 60) + this.minutes;
     }
