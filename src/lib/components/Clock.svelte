@@ -1,6 +1,6 @@
 <script>
-    import Digit from './Digit.svelte';
-    import Tsp from './Tsp.svelte';
+    import Digit from '$lib/components/Digit.svelte';
+    import Tsp from '$lib/components/Tsp.svelte';
 
     export let time = new Date();
     export let height = 250;

@@ -1,5 +1,5 @@
 <script>
-    import Notification from './Notification.svelte';
+    import Notification from '$lib/components/Notification.svelte';
 	export let primary = null;
 	export let secondary = null;
 

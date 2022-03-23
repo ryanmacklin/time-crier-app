@@ -3,9 +3,9 @@
 
     import { onMount } from 'svelte';
 
-    import Clock from './Clock.svelte';
-    import Notifications from './Notifications.svelte';
-    import ErrorDisplay from './ErrorDisplay.svelte';
+    import Clock from '$lib/components/Clock.svelte';
+    import Notifications from '$lib/components/Notifications.svelte';
+    import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
 
     // *** ADD THIS
     const minutesInDay = 1440;
