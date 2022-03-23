@@ -6,10 +6,8 @@
     import Clock from '$lib/components/Clock.svelte';
     import Notifications from '$lib/components/Notifications.svelte';
     import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
+    import { Time } from '$lib/scripts/utils.cjs';
 
-    // *** ADD THIS
-    const minutesInDay = 1440;
-    const secondsInDay = 86400;
 
     let innerWidth, innerHeight, outerHeight, outerWidth;
 
@@ -120,8 +118,8 @@
             let tag = i.tag || ""; // not bothering with tags right now, even though they're in the config as placeholders, but they're useful in debugging
             //console.log(tag);
 
-            let startTime = miltime2minutes(i.startTime);
-            let endTime = miltime2minutes(i.endTime);
+            let startTime = Time.miltime2minutes(i.startTime);
+            let endTime = Time.miltime2minutes(i.endTime);
             if (endTime < startTime) endTime += 1440; // to handle time spanning midnight
 
             if (i.color) {
@@ -186,79 +184,20 @@
         if (Number.isNaN(b)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
         return {"r": r, "g": g, "b": b};
     }
-
-    // time calc functions
-    function miltime2minutes(t) {
-        if (!Number.isInteger(t)) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
-        let hours = Math.trunc(t / 100);
-        let minutes = t % 100;
-        if (hours > 23 || hours < 0) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
-        if (minutes > 59 || minutes < 0) {throw '"' + t.toString() + "\" isn't a valid military time";} // error!
-        return (Math.trunc(t / 100) * 60) + (t % 100);
-    }
-    function curTime(baseline = timeBaseline) { // current time in truncated seconds, subtracting baseline to keep arrays from being whack
-        return Math.floor((time.getTime() - baseline) / 1000);
-    }
     
     /**** NOTIFICATION COMPILING FUNCTIONS */
     // TODO change "tag" to "name"
     // TODO allow for an "enabled: false" option, to skip those entries, so they can live in the file as needed if there's an issue with them
     // TODO also a "dev: true" for only run this is dev mode, and "prod: false" for the converse
     // but that's down the line
-    function getDayId(offset = 0) {
-        let date = new Date(time);
-        if (offset != 0) date.setDate(date.getDate() + offset);
-        let month = date.getMonth();
-        let day = date.getDate();
-        return (month * 40) + day;
-    }
-    function findTimeRange(startTimeMil, endTimeMil, current = curMinuteOfDay()) {
-        let start = miltime2minutes(startTimeMil);
-        let end = miltime2minutes(endTimeMil);
-        let tomorrow = false; // quick flag so other functions can just do a bool test on if we had to add a day
 
-        if (end < start) { // schedule start/end spans day boundary
-        if ((start <= current) || (end >= current)) { // is during
-            end += minutesInDay; // add a day to end only
-            } else { // is upcoming tomorrow
-                start += minutesInDay;
-                end += minutesInDay;
-                tomorrow = true;
-            }
-        } else { // schedule start/end on same day
-            if ((start <= current) && (end >= current)) { // is during
-            // no math
-            } else { // is upcoming tomorrow
-                start += minutesInDay;
-                end += minutesInDay;
-                tomorrow = true;
-            }
-        }
-        // finally, if end is before start, move it forward
-        if (end < start) {
-            end += minutesInDay;
-        }
-        return {"startTime": start, "endTime": end, "tomorrow": tomorrow}
-    }
-    // just for easy logging purposes, going from miltime to minutes (accounting for single day)
-    function miltime4minutes(t) {
-        let s = "0000";
-        let i = false;
-        if (t > minutesInDay) {
-            i = true;
-            t -= minutesInDay;
-        }
-        s = s + ((Math.trunc(t / 60) * 100) + (t % 60) ).toString();
-        s = s.slice(-4);
-        return (t < 0 ? "-" : "") + (i ? "1day+" : "") +  s;
-    }
     let wsSchedule = []; // schedule workspace FOR PRIMARY
     let wsNotifications = []; // notifications workspace (for primary and secondary)
     let wsNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)
 
     function compileNotificationSchedule(conf) {
         let schedule = [];
-        let thisMinuteOfDay = curMinuteOfDay();
+        let thisMinuteOfDay = time.minuteOfDay;
 
         // look-ahead = 3 hours ---- not in scope of this experiment
         // compile = 6 hours
@@ -278,7 +217,7 @@
             wsNotifications[index] = x;
             wsNotificationTagIndex[x.tag] = index; // link tag to index, without changing inherent priority order
 
-            let tr = findTimeRange(x.displayLogic.startTime, x.displayLogic.endTime, thisMinuteOfDay);
+            let tr = time.getTimeRange(x.displayLogic.startTime, x.displayLogic.endTime, thisMinuteOfDay);
 
             // figure out if this needs to be done
             let doIt = true;
@@ -316,8 +255,8 @@
             // here's where we narrow our compiled window down to X hours, and convert it to using day IDs for export
             for (let i = thisMinuteOfDay + startCompile; i <= thisMinuteOfDay + endCompile; i++) {
                 if (wsSchedule[i]) {
-                    let d = getDayId(Math.floor(i / minutesInDay));
-                    let m = i % minutesInDay;
+                    let d = time.dayIdOffset(Math.floor(i / Time.minutesInDay));
+                    let m = i % Time.minutesInDay;
                     if (!Array.isArray(exportSchedule[d])) exportSchedule[d] = [];
                     exportSchedule[d][m] = wsSchedule[i];
                 }
@@ -356,14 +295,13 @@
 
 
     /*** CLOCK/TIME ****/
-    let time = new Date();
-    let timeBaseline = time.getTime();
+    let time = new Time();
     let hours, minutes, seconds;
     // these automatically update when `time` changes, because of the `$:` prefix
     $: {
-        hours = time.getHours();
-        minutes = time.getMinutes();
-        seconds = time.getSeconds();
+        hours = time.hours;
+        minutes = time.minutes;
+        seconds = time.seconds;
         clockColor = getClockColor();
     }
   
@@ -374,16 +312,9 @@
     // TODO: there's an issue where when this refreshes, it goes for server time first, then blinks to local time. At least, does when playing in gitpod. I hate that.
     // REAL TODO: let there be a brief loading screen, cuz it takes a couple seconds to do initial config load, so there's some possibly color blipping anyway
 
-    function curMinuteOfDay() {
-        return (hours * 60) + minutes;
-    }
-    function curTimeMinute(baseline = timeBaseline) {
-        return Math.floor(curTime(timeBaseline) / 60);
-    }
-
     function getClockColor() {
         // not bothering with tags right now, even though they're in the config as placeholders. so this is pretty simple
-        let c = config.clockColors.schedule[curMinuteOfDay()] || config.clockColors.default || defaultClockColor;
+        let c = config.clockColors.schedule[time.minuteOfDay] || config.clockColors.default || defaultClockColor;
         //console.log(curMinuteOfDay());
         //console.log(c);
         return c;
@@ -398,7 +329,7 @@
 
         // start time + clock color poll
          const intervalTime = setInterval(() => {
-            time = new Date();
+            time._time = time.tick(); // warning: this is hacky way to make the time update
             clockColor = getClockColor();
          }, 1000);
          // config file
@@ -465,6 +396,9 @@
             }
         }
     };
+
+    let clockTime;
+    $: { clockTime = time.now; }
 </script>
 <svelte:head>
     <title>Time Crier</title>
@@ -473,7 +407,7 @@
 <div class="all" style="{cssVarLoading}">
 <!-- splash screen (TODO make work) -->
 <div class="splash">
-        loading!
+        Time Crier
 </div>
 
 <!-- app -->
