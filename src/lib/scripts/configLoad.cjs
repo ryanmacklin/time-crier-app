@@ -15,8 +15,8 @@ export class Config {
                 "schedule": []
             },
             "notifications": {
-                "logic": {}, 
-                "schedule": []
+                "primary": [],
+                "secondary": []
             }
         };
     }
@@ -35,10 +35,15 @@ export class Config {
 
     get data() {return this.config}
 
-    fetchIfStale() { // assumes being called per second
+    async fetchIfStale() { // assumes being called per second
         if (!this.loading) {
             if (this.freshnessCount <= 0) {
-                return this.fetch();
+                // TODO NEED TO UNFUCK THIS
+                console.log("sadkfjalsdkjflkasdjflks");
+                
+                let y = await this.fetch();
+                console.log(y);
+                return y;
             } else {
                 this.freshnessCount--;
             }
@@ -72,7 +77,8 @@ export class Config {
 
                 // assign notification logic; compiling happes outside of here
                 if (data.notifications) {
-                    newconfig.notifications.logic = data.notifications;
+                    newconfig.notifications.primary = data.notifications.primary;
+                    newconfig.notifications.secondary = data.notifications.secondary;
                 }
 
                 // Okay, we can replace the config now

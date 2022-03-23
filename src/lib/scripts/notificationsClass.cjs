@@ -26,6 +26,7 @@ export class NotificationsClass {
 
     // run this on start/config update
     compileSchedule(config) {
+        console.log(config);
         let primary = this.compileScheduleSection(config.primary);
         this.primarySchedule = primary.schedule;
         this.primaryNotifications = primary.notifications;

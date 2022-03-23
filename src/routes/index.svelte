@@ -22,7 +22,7 @@
         'core-display': 'none',
     };
     let cssVarLoading = "";
-    let loadingScreenTimeout = 1.5; // in seconds
+    let loadingScreenTimeout = 1; // in seconds
     $: cssVarLoading = Object.entries(loadingStyles)
         .map(([key, value]) => `--${key}:${value}`)
         .join(';');
@@ -40,26 +40,48 @@
     let clockHeight = 250;
     $: clockHeight = ( (innerHeight / 2.5) > 250) ? (innerHeight / 2.5) : 250;
 
-    /**** NOTIFICATIONS ****/
+    /**** POLLING ****/
+
+    async function update() {
+        console.log('hi');
+        let promise = new Promise(function(resolve, reject) {
+            resolve(config.fetchIfStale())
+        })
+        promise.then(
+            result => {
+                console.log(result);
+            if (result) {
+                console.log('bye');
+            // update whatever bound vars here
+            // deal with notification scheduling
+            nProcessor.compileSchedule(config.data.notifications);
+            console.log(config.data.notifications);
+
+            }}
+        );
+    }
+    function tick() {
+        time._time = time.tick(); // warning: this is hacky way to make the time update
+        clockColor = config.currentClockColor(time.minuteOfDay); // is in top
+        activeNotifications = nProcessor.currentNotifications;
+    }
 
     /*** ONMOUNT ***/
     onMount(async () => {
         General.log("Starting app");
         // TODO can we identify if we're on dev or prod, and change variables/visibility if on dev?
+        // initialize to not wait for polling
+        tick();
+        update();
 
-        // start time + clock color poll
+        // start polling
          const intervalTime = setInterval(() => {
-            time._time = time.tick(); // warning: this is hacky way to make the time update
-            clockColor = config.currentClockColor(time.minuteOfDay); // is in top
-            activeNotifications = nProcessor.currentNotifications;
+             tick();
          }, 1000);
          // config file
          const intervalConfig = setInterval(() => {
-             if (config.fetchIfStale()) {
-                // update whatever bound vars here
-                // deal with notification scheduling
-                nProcessor.compileSchedule(config.data.notifications);
-            }
+            update();
+            console.log(config.freshnessCount);
           }, 1000);
         // notifications
         /*const intervalChanges = setInterval(() => {
