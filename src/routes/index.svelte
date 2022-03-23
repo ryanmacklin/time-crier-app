@@ -1,9 +1,11 @@
-<script>
+<script lang='ts'>
+    let error = null; 
+
     import { onMount } from 'svelte';
-        
+
     import Clock from './Clock.svelte';
     import Notifications from './Notifications.svelte';
-    import Error from './Error.svelte';
+    import ErrorDisplay from './ErrorDisplay.svelte';
 
     // *** ADD THIS
     const minutesInDay = 1440;
@@ -417,7 +419,7 @@
 
         // finally, take loading screen off after [loadingTime] seconds
         setTimeout(async function() {
-            function sleep(ms) {
+            function sleep(ms: number) {
                return new Promise(resolve => setTimeout(resolve, ms));
             }
             let divis = 1 / 50;
@@ -442,6 +444,7 @@
             }
             loadingStyles["core-opacity"] = "1";
             loadingStyles["core-display"] = "block";
+            error = new Error('blah');
         }, loadingTime * 1000);
 
         return () => {
@@ -483,7 +486,7 @@
 </div>
 
 <!-- Error -->
-<Error />
+<ErrorDisplay bind:error />
 </div>
 <style>
     div.splash {
