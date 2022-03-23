@@ -1,16 +1,16 @@
 <script>
     import Digit from '$lib/components/Digit.svelte';
     import Tsp from '$lib/components/Tsp.svelte';
+    import { Time } from '$lib/scripts/utils.cjs';
 
-    export let time = new Date();
+    export let time = new Time();
     export let height = 250;
     export let color = '#FFFFFF'; // we'll let elements outside of clock handle changing the color
 
     /* working space vars */
     let hours, minutes, seconds;
     let curTime;
-    let hour, pm;
-    let h1, h2, m1, m2, s1, s2;
+    let digits = Time.clockDigitsStruct;
     let secOpacity = 0;
     let secOpacTime = 0;
     let secOpacTimeFade = 0;
@@ -26,29 +26,11 @@
     let secOpacRefreshThreshold = 0.5;
 
     $: { // these automatically update when `time` changes, because of the `$:` prefix
-        hours = time.getHours();
-        minutes = time.getMinutes();
-        seconds = time.getSeconds();
-        curTime = Math.trunc(time.getTime() / 1000);
-
-        if (hours > 12) {
-            hour = hours - 12;
-            pm = true;
-        } else if (hours == 0) {
-            hour = 12;
-            pm = false;
-        } else {
-            hour = hours;
-            pm = false;
-        }
-
-        h1 = (hour / 10).toString().substring(0,1);
-        if (h1 == "0") h1 = ""; // use " " if I ever want it to take up the same amount of space
-        h2 = (hour % 10).toString();
-        m1 = (minutes / 10).toString().substring(0,1);
-        m2 = (minutes % 10).toString();
-        s1 = (seconds / 10).toString().substring(0,1);
-        s2 = (seconds % 10).toString();
+        hours = time.hours;
+        minutes = time.minutes;
+        seconds = time.seconds;
+        curTime = time.timestampInSeconds;
+        digits = time.clockDigits;
 
         if (secOpacity > 0) {
             // count down opacity
@@ -76,21 +58,21 @@
 
 <div class="clock" on:click={acivateOpacity}>
     <div class="clock-main">
-        <Digit value="{h1}" {color} {height} slim />
-        <Digit value="{h2}" {color} {height} />
+        <Digit value="{digits.h1}" {color} {height} slim />
+        <Digit value="{digits.h2}" {color} {height} />
         <Digit value=":" {color} {height} />
-        <Digit value="{m1}" {color} {height} />
-        <Digit value="{m2}" {color} {height} />
+        <Digit value="{digits.m1}" {color} {height} />
+        <Digit value="{digits.m2}" {color} {height} />
     </div>
     <div class="clock-suffix">
         <div class="clock-seconds" style="opacity: {secOpacity}">
             <Tsp height={2} style="display: block" />
-            <Digit value="{s1}" {color} height={height / divheightSeconds} />
-            <Digit value="{s2}" {color} height={height / divheightSeconds} />
+            <Digit value="{digits.s1}" {color} height={height / divheightSeconds} />
+            <Digit value="{digits.s2}" {color} height={height / divheightSeconds} />
             <Tsp height={divheightSpacing} style="display: block" />
         </div>
         <div class="clock-pm">
-            <Digit value="{pm ? "P" : "A"}" {color} height={height / divheightPm} /> 
+            <Digit value="{digits.pm ? "P" : "A"}" {color} height={height / divheightPm} /> 
         </div>
     </div>
 </div>
