@@ -143,6 +143,25 @@ export class Time {
 
 }
 
-export class Calcs {
+export class General {
+    static getColorComponenets(x) {
+        // this assumes 6-digit hex code (with or without # sign)
+        let r, g, b;
+        let c = x;
+        if (c.substring(0,1) == "#") c = c.substring(1);
+        r = Number.parseInt(c.substring(0,2), 16);
+        if (Number.isNaN(r)) {
+            console.log("---" + x);
+        }
+        if (Number.isNaN(r)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
+        g = Number.parseInt(c.substring(2,4), 16);
+        if (Number.isNaN(g)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
+        b = Number.parseInt(c.substring(4,6), 16);
+        if (Number.isNaN(b)) {} //throw '"' + x + "\" isn't a valid color code";} // error!
+        return {"r": r, "g": g, "b": b};
+    }
 
+    static log(message) {
+        console.log("[" + Date.toLocaleString() + "]  " + message);
+    }
 }

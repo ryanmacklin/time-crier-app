@@ -6,8 +6,8 @@
     import Clock from '$lib/components/Clock.svelte';
     import Notifications from '$lib/components/Notifications.svelte';
     import ErrorDisplay from '$lib/components/ErrorDisplay.svelte';
-    import { Time } from '$lib/scripts/utils.cjs';
-
+    import { Time, General } from '$lib/scripts/utils.cjs';
+    import { Config } from '$lib/scripts/configLoad.cjs';
 
     let innerWidth, innerHeight, outerHeight, outerWidth;
 
