@@ -1,23 +1,28 @@
-    /**** NOTIFICATION COMPILING FUNCTIONS */
-    // TODO change "tag" to "name"
-    // TODO allow for an "enabled: false" option, to skip those entries, so they can live in the file as needed if there's an issue with them
-    // TODO also a "dev: true" for only run this is dev mode, and "prod: false" for the converse
-    // but that's down the line
+import { Time, General } from '$lib/scripts/utils.cjs';
 
-    let wsSchedule = []; // schedule workspace FOR PRIMARY
-    let wsNotifications = []; // notifications workspace (for primary and secondary)
-    let wsNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)
+/**** NOTIFICATION COMPILING FUNCTIONS */
+// TODO change "tag" to "name"
+// TODO allow for an "enabled: false" option, to skip those entries, so they can live in the file as needed if there's an issue with them
+// TODO also a "dev: true" for only run this is dev mode, and "prod: false" for the converse
+// but that's down the line
 
-    function compileNotificationSchedule(conf) {
-        let schedule = [];
-        let thisMinuteOfDay = time.minuteOfDay;
+export class NotificationsClass {
+    constructor() {
+        let wsSchedule = []; // schedule workspace FOR PRIMARY
+        let wsNotifications = []; // notifications workspace (for primary and secondary)
+        let wsNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
+        let time = new Time;
 
         // look-ahead = 3 hours ---- not in scope of this experiment
         // compile = 6 hours
         // that should allow for a relatively sizable internet outage to happen without interruption
         let startCompile = 0; // 0 minutes from timeBaseline
         let endCompile = 360; // 6 hours (3600 minutes) from timeBaseline
+    }
 
+    compileNotificationSchedule(conf) {
+        let schedule = [];
+        let thisMinuteOfDay = this.time.minuteOfDay;
         let exportSchedule = [];
 
         conf.forEach(x => {
@@ -26,11 +31,11 @@
             // TODO this should be the other way, where the notifications are already in an index array, and this loops with that index
             // cuz that's how continual compiling should work
             // but this works for the moment
-            let index = wsNotifications.length; // *** TODO needs to be made something that can be generated ***
-            wsNotifications[index] = x;
-            wsNotificationTagIndex[x.tag] = index; // link tag to index, without changing inherent priority order
+            let index = this.wsNotifications.length; // *** TODO needs to be made something that can be generated ***
+            this.wsNotifications[index] = x;
+            this.wsNotificationTagIndex[x.tag] = index; // link tag to index, without changing inherent priority order
 
-            let tr = time.getTimeRange(x.displayLogic.startTime, x.displayLogic.endTime, thisMinuteOfDay);
+            let tr = this.time.getTimeRange(x.displayLogic.startTime, x.displayLogic.endTime, thisMinuteOfDay);
 
             // figure out if this needs to be done
             let doIt = true;
@@ -61,17 +66,17 @@
 
                 // don't bother with looking at variance here; we'll handle that in Notifications
                 for (let i = tr.startTime; i <= tr.endTime; i++) {
-                    wsSchedule[i] = addNotificationToObject(wsSchedule[i], index);
+                    this.wsSchedule[i] = addNotificationToObject(this.wsSchedule[i], index);
                 }
             }
 
             // here's where we narrow our compiled window down to X hours, and convert it to using day IDs for export
             for (let i = thisMinuteOfDay + startCompile; i <= thisMinuteOfDay + endCompile; i++) {
-                if (wsSchedule[i]) {
+                if (this.wsSchedule[i]) {
                     let d = time.dayIdOffset(Math.floor(i / Time.minutesInDay));
                     let m = i % Time.minutesInDay;
                     if (!Array.isArray(exportSchedule[d])) exportSchedule[d] = [];
-                    exportSchedule[d][m] = wsSchedule[i];
+                    exportSchedule[d][m] = this.wsSchedule[i];
                 }
             }
 
@@ -80,20 +85,20 @@
         });
     }
 
-    function getNotificationByName(name) {
-        if (name in wsNotificationTagIndex) {
-            if (wsNotificationTagIndex[name] in wsNotifications) {
-                return wsNotifications[wsNotificationTagIndex[name]];
+    getNotificationByName(name) {
+        if (name in this.wsNotificationTagIndex) {
+            if (this.wsNotificationTagIndex[name] in wsNotifications) {
+                return this.wsNotifications[wsNotificationTagIndex[name]];
             }
         }
-        log ("Issue: can't find notification by name of \"" + name + "\"");
+        General.log ("Issue: can't find notification by name of \"" + name + "\"");
         return null;
     }
 
 
-        // TODO allow for multiple messages by checking to see if obj is a collection that is or isn't empty
-        // right now this doesn't care about obj
-    function addNotificationToObject(obj, note) {
+    // TODO allow for multiple messages by checking to see if obj is a collection that is or isn't empty
+    // right now this doesn't care about obj
+    addNotificationToObject(obj, note) {
         if (Array.isArray(obj)) { // add to existing array
             let res = obj;
             obj.push(note);
@@ -104,4 +109,5 @@
             return note;
         }
     }
-
+    
+} // end class

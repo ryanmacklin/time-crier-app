@@ -1,6 +1,6 @@
-
 import { Time, General } from '$lib/scripts/utils.cjs';
 import { ClockClass } from '$lib/scripts/clockClass.cjs';
+//import { NotificationsClass } from '$lib/scripts/notificationsClass.cjs';
 
 export class Config {
     static get maxFreshness() { return 600; } // in seconds
@@ -26,6 +26,7 @@ export class Config {
         this.ready = false;
         this.config = Config.freshConfig;
         this.freshnessCount = 0;
+        this.configFile = "/config.json";
         //this.newconfig = Config.freshConfig;
 
         this.configMaxFreshness = 10; // 300 seconds/5 minutes for live; TODO can we make it happen more often in dev?
@@ -49,7 +50,7 @@ export class Config {
         if (this.loading) {return;} // stop because there's already some attempt at loading (I think?)
         General.log("fetching config file");
         this.loading = true;
-        let response = await fetch("./config.json");
+        let response = await fetch(this.configFile);
         let promise = response.json();
         promise.then(data => {
             if (data.updateId != this.config.updateId) { // go ahead and load a new config
@@ -170,4 +171,4 @@ export class Config {
         }
         return ClockClass.defaultColor;
     }
-}
+} // end class

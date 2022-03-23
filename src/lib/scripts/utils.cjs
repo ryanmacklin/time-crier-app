@@ -141,7 +141,7 @@ export class Time {
         return {"startTime": start, "endTime": end, "tomorrow": tomorrow}
     }
 
-}
+} // end class
 
 export class General {
     static getColorComponenets(x) {
@@ -164,4 +164,4 @@ export class General {
     static log(message) {
         console.log("[" + (new Date).toLocaleString() + "]  " + message);
     }
-}
+} // end class

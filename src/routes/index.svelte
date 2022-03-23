@@ -53,7 +53,8 @@
          const intervalConfig = setInterval(() => {
              if (config.fetchIfStale()) {
                 // update whatever bound vars here
-             }
+                // deal with notification scheduling
+            }
           }, 1000);
         // notifications
         /*const intervalChanges = setInterval(() => {
@@ -87,7 +88,6 @@
             }
             loadingStyles["core-opacity"] = "1";
             loadingStyles["core-display"] = "block";
-            error = new Error('blah');
         }, loadingScreenTimeout * 1000);
 
         return () => {
@@ -134,7 +134,6 @@
 <!-- Error -->
 <ErrorDisplay bind:error />
 </div>
-{clockColor}
 <style>
     div.splash {
         display: var(--splash-display, "block");
