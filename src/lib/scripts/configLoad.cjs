@@ -3,7 +3,8 @@ import { Time, General } from '$lib/scripts/utils.cjs';
 import { ClockClass } from '$lib/scripts/clockClass.cjs';
 
 export class Config {
-    static get configMaxFreshness() { return 10; }
+    static get maxFreshness() { return 600; } // in seconds
+    static get freshnessOnFail() { return 15; } // in seconds
 
     static get freshConfig(){ // a blank config file with just white as the default clock color
         return {
@@ -21,21 +22,33 @@ export class Config {
     }
 
     constructor() {
-        this.configLoading = false;
+        this.loading = false;
+        this.ready = false;
         this.config = Config.freshConfig;
-        this.defaultClockColor = "#FFFFFF";
-        this.configFreshness = 0;
-        this.configLoading = false;
-        this.newconfig = Config.freshConfig;
+        this.freshnessCount = 0;
+        //this.newconfig = Config.freshConfig;
 
         this.configMaxFreshness = 10; // 300 seconds/5 minutes for live; TODO can we make it happen more often in dev?
         this.configMalloadCount = 0;
-        }
+    }
 
-    async fetchConfig () {
-        if (this.configLoading) {return;} // stop because there's already some attempt at loading (I think?)
+    get data() {return this.config}
+
+    fetchIfStale() { // assumes being called per second
+        if (!this.loading) {
+            if (this.freshnessCount <= 0) {
+                return this.fetch();
+            } else {
+                this.freshnessCount--;
+            }
+        }
+        return false;
+    }
+
+    async fetch() {
+        if (this.loading) {return;} // stop because there's already some attempt at loading (I think?)
         General.log("fetching config file");
-        this.configLoading = true;
+        this.loading = true;
         let response = await fetch("./config.json");
         let promise = response.json();
         promise.then(data => {
@@ -53,7 +66,7 @@ export class Config {
                 // calculate clock colors
                 //newconfig.clockColors.minutes[1392] = "blue";
                 if (data.clockColors.schedule) {
-                    newconfig.clockColors.schedule = this.calculateColorSchedule(data.clockColors.schedule);
+                    newconfig.clockColors.schedule = this.calculateColorSchedule(data.clockColors.schedule, newconfig);
                 }
 
                 // assign notification logic & compile upcoming time
@@ -63,31 +76,34 @@ export class Config {
 
                 // Okay, we can replace the config now
                 this.config = newconfig;
-                this.configFreshness = this.configMaxFreshness;
+                this.freshnessCount = Config.maxFreshness;
                 this.configMalloadCount = 0;
-                this.configLoading = false;
+                this.loading = false;
+                this.ready = true; // only set here, don't set false elsewhere; this assumes the current config is readl
                 // And set the color now
                 //clockColor = getClockColor(); // THIS NEEDS TO HAPPEN AT SOME POINT
                 General.log("config file updated");
+                return true;
             } else {
                 General.log("no updated needed");
-                this.configFreshness = this.configMaxFreshness;
+                this.freshnessCount = Config.maxFreshness;
                 this.configMalloadCount = 0;
-                this.configLoading = false;
+                this.loading = false;
             }
         })
         .catch(reason => { // TODO: better UX for when error happens
             this.configMalloadCount++;
             let m = reason.message;
-            m = "Config file: " + reason.message + " (" + this.configMalloadCount + " failed load) [" + Date.toLocaleString() + "]";
+            m = "Config file: " + reason.message + " (" + this.configMalloadCount + " failed load) [" + (new Date).toLocaleString() + "]";
             console.error(m);
             //errorMessage = m;
-            this.configFreshness = 15; // try again in 15 seconds
-            this.configLoading = false;
+            this.freshnessCount = Config.freshnessOnFail; // try again in 15 seconds
+            this.loading = false;
         });
+        return false;
     }
     
-    calculateColorSchedule(con) {
+    calculateColorSchedule(con, col = this.config) {
         let res = [];
         con.forEach(i => {
             // get times
@@ -102,11 +118,11 @@ export class Config {
                 let color = General.getColorComponenets(i.color); // just to check color
                 color = i.color; // if it got here, the color's okay
                 for (let i = startTime; i <= endTime; i++) {
-                    res[i % 1440] = this.getColor(color, this.newconfig);
+                    res[i % 1440] = this.getColor(color, col);
                 }
             } else if (i.startColor && i.endColor) {
-                let startColor = General.getColorComponenets(this.getColor(i.startColor, this.newconfig));
-                let endColor = General.getColorComponenets(this.getColor(i.endColor, this.newconfig));
+                let startColor = General.getColorComponenets(this.getColor(i.startColor, col));
+                let endColor = General.getColorComponenets(this.getColor(i.endColor, col));
                 for (let i = startTime; i <= endTime; i++) {
                     let r = Math.round(startColor.r + ( (endColor.r - startColor.r) * ((i - startTime) / (endTime - startTime)) ));
                     let g = Math.round(startColor.g + ( (endColor.g - startColor.g) * ((i - startTime) / (endTime - startTime)) ));
@@ -143,4 +159,15 @@ export class Config {
             }
         }
         return x; // doesn't need transation
-    }}
+    }
+
+    currentClockColor(minuteOfDay) { // pass time.minuteOfDay
+        if (this.ready) {
+            // not bothering with tags right now, even though they're in the config as placeholders. so this is pretty simple
+            let c = this.config.clockColors.schedule[minuteOfDay] || this.config.clockColors.default || ClockClass.defaultColor;
+            //console.log(c);
+            return c;
+        }
+        return ClockClass.defaultColor;
+    }
+}

@@ -162,6 +162,6 @@ export class General {
     }
 
     static log(message) {
-        console.log("[" + Date.toLocaleString() + "]  " + message);
+        console.log("[" + (new Date).toLocaleString() + "]  " + message);
     }
 }
