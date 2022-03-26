@@ -235,12 +235,12 @@ export class NotificationsClass {
 
         //General.log("start: " + start);
         //General.log("end: " + end);
-        notif.text = [
+        /*notif.text = [
             "abc text",
             "rpm text",
             "xyz text",
             "123 text"
-        ];
+        ];*/
         
         if (start > end) end += Time.minutesInDay; // for time loops
         let rand = 15; // TODO: make random start happen; if random start is in the displayLogic
@@ -257,14 +257,10 @@ export class NotificationsClass {
         }
 
         // TODO more complex forms of values, not just 3 sets of ranges
-        let beginLow = notif.displayLogic.randoms.beginLow;
-        let beginHigh = notif.displayLogic.randoms.beginHigh;
-        let pauseLow = notif.displayLogic.randoms.pauseLow;
-        let pauseHigh = notif.displayLogic.randoms.pauseHigh;
-        let lengthLow = notif.displayLogic.randoms.lengthLow;
-        let lengthHigh = notif.displayLogic.randoms.lengthHigh;
+        
+        let rands = this.getRandTimeBounds(notif.displayLogic);
 
-        start += General.randIntFromRange(beginLow, beginHigh);
+        start += General.randIntFromRange(rands.beginLow, rands.beginHigh);
         for (let t = start; t < end; t++) {
             //let m = t % Time.minutesInDay; // let's leave this off for now, might have this happen outside of this func
             
@@ -293,22 +289,87 @@ export class NotificationsClass {
             } else { // single text
                 e.text = text;
             }
+            e.transition.mode = null;
+            e.transition.type = null;
 
             // TODO add single/array transition stuff!
 
             // determine time span
-            let span = General.randIntFromRange(lengthLow, lengthHigh); // TODO: make randomizing happen
+            let span = General.randIntFromRange(rands.lengthLow, rands.lengthHigh); // TODO: make randomizing happen
             // iterate into results here
             for (let i = t; i < t + span; i++) {
                 res[i] = e;
             }
 
             // finally, jump ahead random time
-            rand = General.randIntFromRange(pauseLow, pauseHigh); // TODO: make randomizing happen
+            rand = General.randIntFromRange(rands.pauseLow, rands.pauseHigh); // TODO: make randomizing happen
             t += span + rand;
         }
 
         //General.logObject(res);
+
+        return res;
+    }
+
+    static getRandTimeBounds(dLogic) {
+        let res = {};
+
+        // default
+        let defaultShow = "continuous-big"
+        let s = dLogic.show.toString() || defaultShow;
+        switch (s.toLowerCase()) {
+            case "continuous":
+            case "continuous-big":
+                res.lengthLow = 25;
+                res.lengthHigh = 30;
+                res.pauseLow = 0;
+                res.pauseHigh = 0;
+                res.beginLow = 0;
+                res.beginHigh = 0;
+                 break;
+            case "contnuous-small":
+                res.lengthLow = 5;
+                res.lengthHigh = 8;
+                res.pauseLow = 0;
+                res.pauseHigh = 0;
+                res.beginLow = 0;
+                res.beginHigh = 0;
+                break;
+            case "rotation":
+            case "rotation-big":
+                res.lengthLow = 25;
+                res.lengthHigh = 30;
+                res.pauseLow = 5;
+                res.pauseHigh = 10;
+                res.beginLow = 0;
+                res.beginHigh = 5;
+                break;
+            case "rotation-small":
+                res.lengthLow = 5;
+                res.lengthHigh = 8;
+                res.pauseLow = 40;
+                res.pauseHigh = 50;
+                res.beginLow = 0;
+                res.beginHigh = 20;
+                break;
+            default:
+                // WARNING: assume same as default (hardcoded here as continuous-big)
+                res.lengthLow = 25;
+                res.lengthHigh = 30;
+                res.pauseLow = 5;
+                res.pauseHigh = 10;
+                res.beginLow = 0;
+                res.beginHigh = General.inBetween(res.pauseLow, res.pauseHigh);
+        }
+
+        if (dLogic.randoms) { // custom values can override any of these
+            res.lengthLow = dLogic.randoms.lengthLow || res.lengthLow;
+            res.lengthHigh = dLogic.randoms.lengthHigh || res.lengthHigh;
+            res.pauseLow = dLogic.randoms.pauseLow || res.pauseLow;
+            res.pauseHigh = dLogic.randoms.pauseHigh || res.pauseHigh;
+            res.beginLow = dLogic.randoms.beginLow || res.beginLow;
+            res.beginHigh = dLogic.randoms.beginHigh || res.beginHigh;
+        }
 
         return res;
     }
@@ -319,8 +380,8 @@ export class NotificationsClass {
             "name": "",
             "text": null,
             "transition": {
-                "start": null,
-                "end": null
+                "mode": null,
+                "type": null
             }
         };
     }

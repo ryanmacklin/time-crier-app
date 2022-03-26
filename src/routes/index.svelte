@@ -162,7 +162,7 @@
     <Clock {time} color={clockColor} height={clockHeight} />
     <!-- FAR FUTURE TODO: weather (current + upcoming) -->
     <div style="clear:both"></div>
-    <Notifications collection={nCollection} {activePrimary} {activeSecondary}></Notifications>
+    <Notifications collection={nCollection} {time} {activePrimary}></Notifications>
     <!--<Notifications primary="[static] Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>-->
 </div>
 

@@ -1,12 +1,13 @@
 <script>
 	// REFACTOR? have this just tackle primary or secondary? but account for what secondary looks like when a primary exists vs. doesn't
     import Notification from '$lib/components/Notification.svelte';
-    import { General } from '$lib/scripts/utils.cjs';
+    import { General, Time } from '$lib/scripts/utils.cjs';
     import { NotificationsClass } from '$lib/scripts/notificationsClass.cjs';
 
 	export let collection = null;
 	export let activePrimary = null;
-	export let activeSecondary = null;
+	export let time = new Time();
+	//export let activeSecondary = null;
 
 	let currentCollection = null;
 	let storedPrimary = null;
@@ -51,14 +52,11 @@
 							rotation-big (25-30 minute displays, pauses for 5-10 minutes)
 	*/
 
-	let primaryData = null; // active info: string, style, transition
-	let secondaryData = null;
-
-	let activePause = null; // seconds to pause until the next active thing
-	let secondaryPause = null;
+	let schedule = null; // active info: string, style, transition
+	//let secondaryData = null;
 
 	let primaryEndSignal = null;
-	let secondaryEndSignal = null;
+	//let secondaryEndSignal = null;
 
 	let primarySignals = [];
 
@@ -111,6 +109,7 @@
 						} else {
 							// activate this signal!
 							let notif = currentCollection.primary[idx];
+							
 							//General.logObject(notif);
 							if (General.isReal(notif)) {
 								General.log("Activating notifcation " + notif["name"]);
@@ -118,7 +117,25 @@
 								// NOW ACTIVATE THE SIGNAL FOR REAL
 
 								let x = NotificationsClass.calculateSpan(notif);
-console.log(x);
+								if (!Array.isArray(schedule)) schedule = [];
+								if (Array.isArray(x) && x != null) {
+									for (let i = 0; i <= x.length; i++) {
+										if (i in x) {
+											// putting "% Time.minutesInDay" here cuz I think it'll work right
+											if ((i % Time.minutesInDay) in schedule) {
+												if (Array.isArray(schedule)) {
+													schedule.push(x);
+												} else {
+													schedule = [schedule, x];
+												}
+											} else {
+												schedule[(i% Time.minutesInDay)] = x[i];
+											}
+										}
+									}
+								}
+
+								//let pri = notif.priority || 2; // not sure when I need this
 							} else {
 								storedPrimary = null; // it needs to be redone
 							}
@@ -134,15 +151,20 @@ console.log(x);
 			}
 
 		}
+	} // $:
+
+	let current = null;
+	$:{ 
+		if (schedule != null) {
+			current = schedule[time.minuteOfDay] || null;
+		}
 	}
-
-
 
 </script>
 
 <div class="notifications">
 	<!-- these components don't handle animation/transition decision logic, just displays what it's told, and maybe simple ani/trans execution -->
-	<Notification  />
+	<Notification value={current} />
 </div>
 
 <style>

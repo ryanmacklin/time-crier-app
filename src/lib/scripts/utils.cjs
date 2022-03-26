@@ -131,6 +131,8 @@ export class Time {
 
         if (end < start) { // schedule start/end spans day boundary
             if ((start <= current) || (end >= current)) { // is during
+// TODO THIS IS IMPORTANT, IT'S EITHER EARLY IN DAY AND START SHOULD BE 0, OR END OF DAY AND END SHOULD BE +1440
+// I THINK THIS IS RIGHT
                 start = 0; // start is beginning of time, aka 0
             } else { // is upcoming tomorrow
                 start += Time.minutesInDay;
@@ -224,6 +226,13 @@ export class General {
         let n = "" + this.randInt(10000);
         res = res + (n.length < 4 ? "0".replace(n.length - 4) : "") + n;
         return res;
+    }
+
+    static inBetween(a = 0, b = 0) {
+        let x = a;
+        let y = b;
+        if (x > y) { x = b; y = a; } // reverse if needed
+        return x + Math.floor((y - x) / 2);
     }
 
 } // end class
