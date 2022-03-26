@@ -1,7 +1,6 @@
 import { Time, General } from '$lib/scripts/utils.cjs';
 
 /**** NOTIFICATION COMPILING FUNCTIONS */
-// TODO change "tag" to "name"
 // TODO allow for an "enabled: false" option, to skip those entries, so they can live in the file as needed if there's an issue with them
 // TODO also a "dev: true" for only run this is dev mode, and "prod: false" for the converse
 // but that's down the line
@@ -14,10 +13,10 @@ export class NotificationsClass {
 
         this.primarySchedule = []; // schedule workspace FOR PRIMARY
         this.primaryNotifications = []; // notifications workspace (for primary and secondary)
-        this.primaryNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
+        this.primaryNotificationnameIndex = [];// link name to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by name alpha accidentally)    
         this.secondarySchedule = []; // schedule workspace FOR PRIMARY
         this.secondaryNotifications = []; // notifications workspace (for primary and secondary)
-        this.secondaryNotificationTagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
+        this.secondaryNotificationnameIndex = [];// link name to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by name alpha accidentally)    
 
         // look-ahead = 3 hours ---- not in scope of this experiment
         // compile = 6 hours
@@ -32,12 +31,12 @@ export class NotificationsClass {
         let primary = this.compileScheduleSection(config.primary);
         this.primarySchedule = primary.schedule;
         this.primaryNotifications = primary.notifications;
-        this.primaryTagIndex = primary.tagIndex;
+        this.primarynameIndex = primary.nameIndex;
 
         let secondary = this.compileScheduleSection(config.secondary);
         this.secondarySchedule = secondary.schedule;
         this.secondaryNotifications = secondary.notifications;
-        this.secondaryTagIndex = secondary.tagIndex;
+        this.secondarynameIndex = secondary.nameIndex;
 
         this.refreshTime = this.newRefreshTime();
 
@@ -101,7 +100,7 @@ export class NotificationsClass {
     // internals
     compileScheduleSection(section) {
         let notifications = []; // notifications workspace (for primary and secondary)
-        let tagIndex = [];// link tag to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by tag alpha accidentally)    
+        let nameIndex = [];// link name to notification array index, without changing inherent priority order we use by iterating on notification (i.e. don't rearrange source collection by name alpha accidentally)    
 
         section.forEach(x => {
             // TODO this should be the other way, where the notifications are already in an index array, and this loops with that index
@@ -109,7 +108,7 @@ export class NotificationsClass {
             // but this works for the moment
             let index = notifications.length; // *** TODO needs to be made something that can be generated ***
             notifications[index] = x;
-            tagIndex[x.tag] = index; // link tag to index, without changing inherent priority order
+            nameIndex[x.name] = index; // link name to index, without changing inherent priority order
         });
 
         let schedule = this.updateScheduleSection(notifications);
@@ -117,7 +116,7 @@ export class NotificationsClass {
         return {
             "schedule": schedule,
             "notifications": notifications,
-            "tagIndex": tagIndex
+            "nameIndex": nameIndex
         };
     }
 
@@ -174,11 +173,38 @@ export class NotificationsClass {
         return exportSchedule;
     }
 
+    get notificationObject() {
+        if (!this.ready) return null;
+        return {
+            "primary": this.primaryNotifications,
+            "secondary": this.secondaryNotifications
+        };
+        /* let n = [];
+        n["primary"] = this.arrayByNames(this.primaryNotifications);
+        n["secondary"] = this.arrayByNames(this.secondaryNotifications);
+        return n; */
+    }
+
+    arrayByNames(ary) { // turn into associated array
+        let res = [];
+        General.logObject(ary);
+        for (let i = 0; i < ary; i++) {
+            let name = null; 
+            if (General.isReal(ary[i]["name"])) {
+                name = ary[i]["name"];
+            }
+            if (name != null) {
+                res[name] = ary[i];
+            }
+        }
+        return res;
+    }
+
     /*
     getNotificationByName(name) {
-        if (name in this.wsNotificationTagIndex) {
-            if (this.wsNotificationTagIndex[name] in this.wsNotifications) {
-                return this.wsNotifications[this.wsNotificationTagIndex[name]];
+        if (name in this.wsNotificationnameIndex) {
+            if (this.wsNotificationnameIndex[name] in this.wsNotifications) {
+                return this.wsNotifications[this.wsNotificationnameIndex[name]];
             }
         }
         General.log ("Issue: can't find notification by name of \"" + name + "\"");
@@ -198,6 +224,25 @@ export class NotificationsClass {
         } else { // just return note, don't make an array of just one item;
             return note;
         }
+    }
+
+    static calculateSpan(notif) {
+        let res = [];
+
+        /*
+        endTime += day if is before startTime
+        for t = start + rand variance; t < end; t++ {
+            length = rand length
+            text = rand from text
+            fill array with length
+            set transitions
+            skip ahead rand variance
+        }
+        */
+
+        
+
+        return res;
     }
     
 } // end class

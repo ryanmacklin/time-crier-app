@@ -1,7 +1,17 @@
 <script>
     import Notification from '$lib/components/Notification.svelte';
-	export let primary = null;
-	export let secondary = null;
+    import { General } from '$lib/scripts/utils.cjs';
+    import { NotificationsClass } from '$lib/scripts/notificationsClass.cjs';
+
+	export let collection = null;
+	export let activePrimary = null;
+	export let activeSecondary = null;
+
+	let currentCollection = null;
+	let storedPrimary = null;
+	let storedSecondary = null;
+	let currentPrimary = null;
+	let currentSecondary = null;
 
 	/* INTENDED LOGIC
 
@@ -33,32 +43,111 @@
             }
 	*/
 
+	let primaryData = null; // active info: string, style, transition
+	let secondaryData = null;
 
-	let primaryText = "";
-	let secondaryText = "";
+	let activePause = null; // seconds to pause until the next active thing
+	let secondaryPause = null;
 
-	// this is eventually a function to handle both primary and secondary
-	$:{ 
-		if (primary !== null && primary !== undefined) {
-			if (typeof primary.text === "string") { // is an object value, at least one we'll attempt to trust
-				primaryText = primary.text;
-				// other stuff for entire object
-			} else if (typeof primary === "string") { // is a text value
-				primaryText = primary;
-				// other stuff for just text
+	let primaryEndSignal = null;
+	let secondaryEndSignal = null;
+
+	let primarySignals = [];
+
+	function makeClearSignals(ary) {
+		let res = [];
+		//if (General.isIterable(ary)) {
+			for(let i = 0; i < ary.length; i++) {
+				res[i] = false;
 			}
-		} else {
-			primaryText = "";
-		}
+		//}
+		return res;
 	}
-	
-	secondary = secondary; // just to get right of that warning for now
+
+	// TODO just doing primary now, will do secondary later
+	$:{
+		// check to see if we need to change the collection system entirely
+		if(currentCollection != collection) {
+			currentCollection = collection;
+			if (General.isIterable(currentCollection.primary)) {
+				primarySignals = makeClearSignals(currentCollection.primary);
+
+			} else {
+				primarySignals = [];
+			}
+			// gotta reset everything
+			storedPrimary = null;
+			currentPrimary = null;
+		}
+		//General.logObject(currentCollection.primary, "signals");
+	}
+
+	// TODO include priority, defaulting to 2. Lower = higher (namely 0, 1, etc)
+
+	$:{
+		// check to see if we need to change notifications
+		if(true) { //activePrimary != storedPrimary) {
+			//General.log("Active primary changed");
+			storedPrimary = activePrimary;
+			currentPrimary = activePrimary;
+			if (Number.isInteger(currentPrimary)) currentPrimary = [currentPrimary]; // make array of 1 if is just an integer
+
+			if (General.isFilledArray(currentPrimary)) {
+				// at least one active primary now
+				currentPrimary.forEach(idx => {
+					// only works in the index maps to something in the collection
+					if (idx in primarySignals) {
+						// if we already have an active signal for this one, we don't need to do more
+						if (primarySignals[idx]) {
+							// do nothing
+						} else {
+							// activate this signal!
+							let notif = currentCollection.primary[idx];
+							General.logObject(notif);
+							if (General.isReal(notif)) {
+								General.log("Activating notifcation " + notif["name"]);
+								primarySignals[idx] = true;
+
+								// NOW ACTIVATE THE SIGNAL FOR REAL
+								
+								/*
+								endTime += day if is before startTime
+								for t = start + rand variance; t < end; t++ {
+									length = rand length
+									text = rand from text
+									fill array with length
+									set transitions
+									skip ahead rand variance
+								}
+								*/
+
+							} else {
+								storedPrimary = null; // it needs to be redone
+							}
+						}
+					} else {
+						// TODO ERROR! index isn't in bounds for some damn reason about calculations
+					}
+				});
+
+			} else {
+				// no active primaries now
+				primaryEndSignal = (new Date()).getTime();
+			}
+
+		}
+
+
+
+	}
+
+
+
 </script>
 
 <div class="notifications">
 	<!-- these components don't handle animation/transition decision logic, just displays what it's told, and maybe simple ani/trans execution -->
-	<Notification text={primaryText} />
-	<Notification text={secondaryText} />
+	<Notification  />
 </div>
 
 <style>

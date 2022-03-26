@@ -176,4 +176,33 @@ export class General {
     static log(message) {
         console.log("[" + (new Date).toLocaleString() + "]  " + message);
     }
+
+    static logObject(message, name = "") {
+        console.log("=====" + (name != "" ? (" " + name + " =====") : "====="));
+        console.log(message);
+        console.log("=".repeat(name.length > 0 ? 12 + name.length : 10));
+    }
+
+    static isReal(obj = undefined) {
+        try {
+            if (obj === undefined) return false;
+            if (obj === null || obj == 0 || obj == "") return false;
+            if (this.isIterable(obj) && obj.length == 0) return false;
+        } catch {
+            return false;
+        }
+        return true;
+    }
+
+    static isFilledArray(ary) {
+        if (!this.isIterable(ary)) return false;
+        return (ary.length > 0);
+    }
+
+    static isIterable(obj) {
+        if (obj == null || obj == undefined) return false;
+        //console.log("sup! == " + (typeof obj[Symbol.iterator] === 'function'));
+        return (typeof obj[Symbol.iterator] === 'function');
+    }
+
 } // end class

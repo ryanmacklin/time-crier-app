@@ -30,7 +30,9 @@
 
 
     let config = new Config;
+    // notification bigs
     let nProcessor = new NotificationsClass;
+    let nCollection = { "primary": [], "secondary": [] };
 
     /*** CLOCK/TIME ****/
     let clockColor = ClockClass.defaultColor;
@@ -69,11 +71,15 @@
             //console.log(config.freshnessCount);
             if (config.updateNotifications) {
                 config.updateNotifications = false;
+                let nCol = [];
                 nProcessor.compileSchedule(config.data.notifications);
+                nCollection = nProcessor.notificationObject;
+                //nCollection = nProcessor.notificationArray;
+                //General.logObject(nCollection, "nCollection");
             }
             if (nProcessor.ready) {
-                activePrimary = nProcessor.currentPrimary;
-                activeSecondary = nProcessor.currentSecondary;
+                activePrimary = nProcessor.currentPrimary[time.dayId][time.minuteOfDay];
+                //activeSecondary = nProcessor.currentSecondary[time.dayId][time.minuteOfDay];
             }
           }, 1000);
         // notifications
@@ -155,7 +161,7 @@
     <Clock {time} color={clockColor} height={clockHeight} />
     <!-- FAR FUTURE TODO: weather (current + upcoming) -->
     <div style="clear:both"></div>
-    <Notifications primary={notificationPrimary} secondary="Can you do 5 minutes of exercise soon?"></Notifications>
+    <Notifications collection={nCollection} {activePrimary} {activeSecondary}></Notifications>
     <!--<Notifications primary="[static] Sleep is respecting yourself" secondary="Can you do 5 minutes of exercise soon?"></Notifications>-->
 </div>
 
