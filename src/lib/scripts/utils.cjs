@@ -205,4 +205,14 @@ export class General {
         return (typeof obj[Symbol.iterator] === 'function');
     }
 
+    static shuffleArray(ary) {
+        let res = ary;
+        res.sort(() => Math.random() - 0.5);
+        return res;
+    }
+    
+    static randInt(cap) { // number from 0 to cap-1
+        return Math.floor(Math.random() * cap);
+    }
+
 } // end class

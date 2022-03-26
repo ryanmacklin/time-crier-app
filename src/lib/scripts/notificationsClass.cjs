@@ -228,8 +228,20 @@ export class NotificationsClass {
 
     static calculateSpan(notif) {
         let res = [];
+        General.logObject(notif, notif.name);
 
         /*
+            "name": "sleep",
+            "text": "Sleep is respecting yourself",
+            "priority": 1,
+            "displayLogic": {
+                "startTime": 100,
+                "endTime": 600,
+                "type": "continuous",
+                "rotate": 600,
+                "rotateVariance": 100
+            }
+
         endTime += day if is before startTime
         for t = start + rand variance; t < end; t++ {
             length = rand length
@@ -239,10 +251,72 @@ export class NotificationsClass {
             skip ahead rand variance
         }
         */
-
         
+        // dealing with start/end times; TODO: dealing with day differences? Maybe have that handle this start/end stuff
+        let start = notif.displayLogic.startTime;
+        let end = notif.displayLogic.endTime;
+        if (start > end) end += Time.minutesInDay; // for time loops
+        let rand = 15; // TODO: make random start happen; if random start is in the displayLogic
+        start += rand; // randomizing
+
+        let text = null;
+        let textIter = null;
+        if (Array.isArray(text)) {
+            // if the text is array, randomize it and start iter
+            text = General.shuffleArray(text);
+            textIter = 0;
+        } else {
+            text = e.text;
+        }
+
+        for (let t = start; t < end; t++) {
+            //let m = t % Time.minutesInDay; // let's leave this off for now, might have this happen outside of this func
+            
+            // add minute element
+            let e = NotificationsClass.notificationMinuteStruct;
+            e.name = notif.name;
+
+            if (Array.isArray(text)) {
+                // TODO iterate to next value; randomize again if out of text, making sure prior text isn't the same as starting text
+                if (text.length == textIter) { // time to loop!
+                    let last = text[text.length-1];
+                    text = General.shuffleArray(e.text);
+                    while (text[0] == last) {
+                        text = General.shuffleArray(e.text);
+                    }
+                    textIter = 0;
+                }
+                text = notif.text[textIter++];
+            } else { // single text
+                text = notif.text;
+            }
+
+            // determine time span
+            let span = 15; // TODO: make randomizing happen
+            for (let i = t; i <= t + span; i++) {
+                res[i] = e;
+            }
+
+            // iterate here
+
+            // finally, jump ahead random time
+            rand = 15; // TODO: make randomizing happen
+            t += span + rand;
+        }
 
         return res;
+    }
+
+    static get notificationMinuteStruct() {
+        return {
+            "id": "",
+            "name": "",
+            "text": null,
+            "transition": {
+                "start": null,
+                "end": null
+            }
+        };
     }
     
 } // end class

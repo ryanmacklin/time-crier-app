@@ -1,4 +1,5 @@
 <script>
+	// REFACTOR? have this just tackle primary or secondary? but account for what secondary looks like when a primary exists vs. doesn't
     import Notification from '$lib/components/Notification.svelte';
     import { General } from '$lib/scripts/utils.cjs';
     import { NotificationsClass } from '$lib/scripts/notificationsClass.cjs';
@@ -103,7 +104,7 @@
 						} else {
 							// activate this signal!
 							let notif = currentCollection.primary[idx];
-							General.logObject(notif);
+							//General.logObject(notif);
 							if (General.isReal(notif)) {
 								General.log("Activating notifcation " + notif["name"]);
 								primarySignals[idx] = true;
@@ -120,6 +121,8 @@
 									skip ahead rand variance
 								}
 								*/
+
+								let x = NotificationsClass.calculateSpan(notif);
 
 							} else {
 								storedPrimary = null; // it needs to be redone
