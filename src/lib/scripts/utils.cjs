@@ -130,8 +130,8 @@ export class Time {
         let tomorrow = false; // quick flag so other functions can just do a bool test on if we had to add a day
 
         if (end < start) { // schedule start/end spans day boundary
-        if ((start <= current) || (end >= current)) { // is during
-            end += Time.minutesInDay; // add a day to end only
+            if ((start <= current) || (end >= current)) { // is during
+                start = 0; // start is beginning of time, aka 0
             } else { // is upcoming tomorrow
                 start += Time.minutesInDay;
                 end += Time.minutesInDay;
@@ -211,8 +211,19 @@ export class General {
         return res;
     }
     
-    static randInt(cap) { // number from 0 to cap-1
+    static randInt(cap = 10) { // number from 0 to cap-1
         return Math.floor(Math.random() * cap);
+    }
+    
+    static randIntFromRange(start = 0, end = 10) { // number from start to cap (not cap-1)
+        return start + this.randInt(end - start + 1);
+    }
+
+    static idFromText(text = "") {
+        let res = (text.toLowerCase().replaceAll('/[^a-z]', "") + "0000").substring(0, 3);
+        let n = "" + this.randInt(10000);
+        res = res + (n.length < 4 ? "0".replace(n.length - 4) : "") + n;
+        return res;
     }
 
 } // end class

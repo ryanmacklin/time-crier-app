@@ -61,9 +61,14 @@
                 "displayLogic": {
                     "startTime": 600,
                     "endTime": 2345,
-                    "type": "continuous",
-                    "rotate": 600,
-                    "rotateVariance": 100
+                    "randoms": {
+                        "beginLow": 5,
+                        "beginHigh": 15,
+                        "lengthLow": 4,
+                        "lengthHigh": 6,
+                        "pauseLow": 1,
+                        "pauseHigh": 1
+                    }
                 }
             },
             {
@@ -73,9 +78,14 @@
                 "displayLogic": {
                     "startTime": 100,
                     "endTime": 600,
-                    "type": "continuous",
-                    "rotate": 600,
-                    "rotateVariance": 100
+                    "randoms": {
+                        "beginLow": 5,
+                        "beginHigh": 15,
+                        "lengthLow": 4,
+                        "lengthHigh": 6,
+                        "pauseLow": 1,
+                        "pauseHigh": 1
+                    }
                 }
             },
             {
@@ -86,7 +96,14 @@
                     "dayWeek": 2,
                     "startTime": 2000,
                     "endTime": 200,
-                    "type": "continuous"
+                    "randoms": {
+                        "beginLow": 5,
+                        "beginHigh": 15,
+                        "lengthLow": 4,
+                        "lengthHigh": 6,
+                        "pauseLow": 1,
+                        "pauseHigh": 1
+                    }
                 }
             },
             {
@@ -97,7 +114,14 @@
                     "dayMonth": -1,
                     "startTime": 1000,
                     "endTime": 2300,
-                    "type": "continuous"
+                    "randoms": {
+                        "beginLow": 5,
+                        "beginHigh": 15,
+                        "lengthLow": 4,
+                        "lengthHigh": 6,
+                        "pauseLow": 1,
+                        "pauseHigh": 1
+                    }
                 }
             }
         ],

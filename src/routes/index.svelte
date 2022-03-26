@@ -78,8 +78,9 @@
                 //General.logObject(nCollection, "nCollection");
             }
             if (nProcessor.ready) {
-                activePrimary = nProcessor.currentPrimary[time.dayId][time.minuteOfDay];
-                //activeSecondary = nProcessor.currentSecondary[time.dayId][time.minuteOfDay];
+                //console.log(nProcessor.currentPrimary);
+                activePrimary = nProcessor.currentPrimary[time.dayId][time.minuteOfDay] || [];
+                //activeSecondary = nProcessor.currentSecondary[time.dayId][time.minuteOfDay || [];
             }
           }, 1000);
         // notifications

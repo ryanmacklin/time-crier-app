@@ -44,6 +44,13 @@
             }
 	*/
 
+	/*
+							continuous-small (if multiple texts, rotate every 5-8 minutes)
+							continuous-big (if multiple texts, rotate every 25-30 minutes)
+							rotation-small (5-8 minute displays, pauses for 40-50 minutes)
+							rotation-big (25-30 minute displays, pauses for 5-10 minutes)
+	*/
+
 	let primaryData = null; // active info: string, style, transition
 	let secondaryData = null;
 
@@ -108,22 +115,10 @@
 							if (General.isReal(notif)) {
 								General.log("Activating notifcation " + notif["name"]);
 								primarySignals[idx] = true;
-
 								// NOW ACTIVATE THE SIGNAL FOR REAL
-								
-								/*
-								endTime += day if is before startTime
-								for t = start + rand variance; t < end; t++ {
-									length = rand length
-									text = rand from text
-									fill array with length
-									set transitions
-									skip ahead rand variance
-								}
-								*/
 
 								let x = NotificationsClass.calculateSpan(notif);
-
+console.log(x);
 							} else {
 								storedPrimary = null; // it needs to be redone
 							}
@@ -139,9 +134,6 @@
 			}
 
 		}
-
-
-
 	}
 
 
