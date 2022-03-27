@@ -21,7 +21,7 @@ export class NotificationsClass {
         // look-ahead = 3 hours ---- not in scope of this experiment
         // compile = 6 hours
         // that should allow for a relatively sizable internet outage to happen without interruption
-        this.startCompile = 0; // 0 minutes from timeBaseline
+        this.startCompile = -2; // 0 minutes from timeBaseline, negative -2 means we're TRYING to look behind current minute
         this.endCompile = 360; // 6 hours (3600 minutes) from timeBaseline
         this.refreshWait = 1; // 5 hours from timeBaseline
     }
@@ -161,7 +161,7 @@ export class NotificationsClass {
 
             // here's where we narrow our compiled window down to X hours, and convert it to using day IDs for export
             for (let i = thisMinuteOfDay + this.startCompile; i <= thisMinuteOfDay + this.endCompile; i++) {
-                if (wsSchedule[i]) {
+                if (wsSchedule[i] != undefined) { // remember 0 is a valid value, as the first record of the array!
                     let d = time.dayIdOffset(Math.floor(i / Time.minutesInDay));
                     let m = i % Time.minutesInDay;
                     if (!Array.isArray(exportSchedule[d])) exportSchedule[d] = [];
@@ -169,6 +169,7 @@ export class NotificationsClass {
                 }
             }
         }
+        //console.log(exportSchedule);
         return exportSchedule;
     }
 
@@ -189,7 +190,7 @@ export class NotificationsClass {
         General.logObject(ary);
         for (let i = 0; i < ary; i++) {
             let name = null; 
-            if (General.isReal(ary[i]["name"])) {
+            if (General.hasValue(ary[i]["name"])) {
                 name = ary[i]["name"];
             }
             if (name != null) {
@@ -259,6 +260,7 @@ export class NotificationsClass {
         // TODO more complex forms of values, not just 3 sets of ranges
         
         let rands = this.getRandTimeBounds(notif.displayLogic);
+        //General.logObject(rands);
 
         start += General.randIntFromRange(rands.beginLow, rands.beginHigh);
         for (let t = start; t < end; t++) {
@@ -303,11 +305,10 @@ export class NotificationsClass {
 
             // finally, jump ahead random time
             rand = General.randIntFromRange(rands.pauseLow, rands.pauseHigh); // TODO: make randomizing happen
-            t += span + rand;
+            t += rand;
         }
 
-        //General.logObject(res);
-
+        General.logObject(res);
         return res;
     }
 
@@ -318,6 +319,14 @@ export class NotificationsClass {
         let defaultShow = "continuous-big"
         let s = dLogic.show.toString() || defaultShow;
         switch (s.toLowerCase()) {
+            case "every-minute":
+                res.lengthLow = 1;
+                res.lengthHigh = 1;
+                res.pauseLow = 0;
+                res.pauseHigh = 0;
+                res.beginLow = 0;
+                res.beginHigh = 0;
+                break;
             case "continuous":
             case "continuous-big":
                 res.lengthLow = 25;

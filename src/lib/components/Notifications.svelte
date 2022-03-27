@@ -92,8 +92,8 @@
 
 	$:{
 		// check to see if we need to change notifications
-		if(true) { //activePrimary != storedPrimary) {
-			//General.log("Active primary changed");
+		if (activePrimary != storedPrimary) {
+			General.log("Active primary changed: " + activePrimary.toString());
 			storedPrimary = activePrimary;
 			currentPrimary = activePrimary;
 			if (Number.isInteger(currentPrimary)) currentPrimary = [currentPrimary]; // make array of 1 if is just an integer
@@ -111,7 +111,7 @@
 							let notif = currentCollection.primary[idx];
 							
 							//General.logObject(notif);
-							if (General.isReal(notif)) {
+							if (General.hasValue(notif)) {
 								General.log("Activating notifcation " + notif["name"]);
 								primarySignals[idx] = true;
 								// NOW ACTIVATE THE SIGNAL FOR REAL
@@ -121,7 +121,11 @@
 								if (Array.isArray(x) && x != null) {
 									for (let i = 0; i <= x.length; i++) {
 										if (i in x) {
+											//let day = time.dayIdOffset(time.minuteOfDay > Time.minutesInDay ? 1: 0);
 											// putting "% Time.minutesInDay" here cuz I think it'll work right
+											if (!Array.isArray(schedule)) {
+												schedule = [];
+											}
 											if ((i % Time.minutesInDay) in schedule) {
 												if (Array.isArray(schedule)) {
 													schedule.push(x);
@@ -154,10 +158,14 @@
 	} // $:
 
 	let current = null;
+	let currentId = null;
 	$:{ 
 		if (schedule != null) {
+			//General.logObject(schedule, General.randInt(10).toString());
 			current = schedule[time.minuteOfDay] || null;
+			currentId = (General.hasValue(current) ? current.id : "null");
 		}
+		//console.log(schedule);
 	}
 
 </script>
@@ -166,13 +174,14 @@
 	<!-- these components don't handle animation/transition decision logic, just displays what it's told, and maybe simple ani/trans execution -->
 	<Notification value={current} />
 </div>
+{currentId}
 
 <style>
 	div.notifications {
 		margin-top: 1em;
         /* defaults */
 		font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-		font-size: 3.75rem; /* 60px */
+		font-size: 7rem;
 		line-height: 1;
 		color: white;
 	}

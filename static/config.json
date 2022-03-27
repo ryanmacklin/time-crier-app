@@ -55,6 +55,35 @@
     "notifications": {
         "primary": [
             {
+                "name": "testmort",
+                "text": [
+                    "Schedule mortgage payment",
+                    "Mortgage is due soon",
+                    "Snooze me when the mortgage is scheduled"
+                ],
+                "priority": 0,
+                "displayLogic": {
+                    "dayMonth": -1,
+                    "startTime": 1000,
+                    "endTime": 100,
+                    "show": "every-minute",
+                    "xshow": "continuous-small",
+                    "xrandoms": {
+                        "beginLow": 5,
+                        "beginHigh": 15,
+                        "lengthLow": 4,
+                        "lengthHigh": 6,
+                        "pauseLow": 1,
+                        "pauseHigh": 1
+                    }
+                }
+            }
+        ],
+        "secondary": []
+    },
+    "xxnotifications": {
+        "primary": [
+            {
                 "name": "test",
                 "text": "testing!",
                 "priority": 1,
@@ -111,14 +140,19 @@
             },
             {
                 "name": "mortgage",
-                "text": "Pay mortgage!",
+                "text": [
+                    "Schedule mortgage payment",
+                    "Mortgage is due soon",
+                    "Snooze me when the mortgage is scheduled"
+                ],
                 "priority": 0,
                 "displayLogic": {
                     "dayMonth": -1,
                     "startTime": 1000,
-                    "endTime": 2300,
-                    "show": "continuous-small",
-                    "randoms": {
+                    "endTime": 100,
+                    "show": "every-minute",
+                    "xshow": "continuous-small",
+                    "xrandoms": {
                         "beginLow": 5,
                         "beginHigh": 15,
                         "lengthLow": 4,

@@ -130,14 +130,16 @@ export class Time {
         let tomorrow = false; // quick flag so other functions can just do a bool test on if we had to add a day
 
         if (end < start) { // schedule start/end spans day boundary
-            if ((start <= current) || (end >= current)) { // is during
+            if (start <= current) { // is during, later part of day
+                end += Time.minutesInDay;
+            } else if (end >= current) { // is during, earlier part of day
 // TODO THIS IS IMPORTANT, IT'S EITHER EARLY IN DAY AND START SHOULD BE 0, OR END OF DAY AND END SHOULD BE +1440
 // I THINK THIS IS RIGHT
-                start = 0; // start is beginning of time, aka 0
-            } else { // is upcoming tomorrow
-                start += Time.minutesInDay;
+                start -= Time.minutesInDay; // start is yesterday, either -1440 or 0?
+            } else { // is upcoming later today (ending tomorrow)
+                //start += Time.minutesInDay;
                 end += Time.minutesInDay;
-                tomorrow = true;
+                //tomorrow = true;
             }
         } else { // schedule start/end on same day
             if ((start <= current) && (end >= current)) { // is during
@@ -149,9 +151,10 @@ export class Time {
             }
         }
         // finally, if end is before start, move it forward
-        if (end < start) {
+        /* if (end < start) {
             end += Time.minutesInDay;
-        }
+        } */
+        //console.log({"startTime": start, "endTime": end, "tomorrow": tomorrow});
         return {"startTime": start, "endTime": end, "tomorrow": tomorrow}
     }
 
@@ -185,7 +188,7 @@ export class General {
         console.log("=".repeat(name.length > 0 ? 12 + name.length : 10));
     }
 
-    static isReal(obj = undefined) {
+    static hasValue(obj = undefined) {
         try {
             if (obj === undefined) return false;
             if (obj === null || obj == 0 || obj == "") return false;
@@ -218,6 +221,7 @@ export class General {
     }
     
     static randIntFromRange(start = 0, end = 10) { // number from start to cap (not cap-1)
+        if (start == end) return start;
         return start + this.randInt(end - start + 1);
     }
 
@@ -234,5 +238,16 @@ export class General {
         if (x > y) { x = b; y = a; } // reverse if needed
         return x + Math.floor((y - x) / 2);
     }
+
+    static sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    static makeCssString(styles) {
+        return Object.entries(styles)
+        .map(([key, value]) => `--${key}:${value}`)
+        .join(';');
+    }
+
 
 } // end class

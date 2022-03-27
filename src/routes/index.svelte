@@ -23,10 +23,7 @@
     };
     let cssVarLoading = "";
     let loadingScreenTimeout = 0.5; // in seconds
-    $: cssVarLoading = Object.entries(loadingStyles)
-        .map(([key, value]) => `--${key}:${value}`)
-        .join(';');
-
+    $: cssVarLoading = General.makeCssString(loadingStyles);
 
 
     let config = new Config;
@@ -78,9 +75,14 @@
                 //General.logObject(nCollection, "nCollection");
             }
             if (nProcessor.ready) {
+                // TODO fix inconsistency on whether current minute is loaded in or not
                 //console.log(nProcessor.currentPrimary);
-                activePrimary = nProcessor.currentPrimary[time.dayId][time.minuteOfDay] || [];
-                //activeSecondary = nProcessor.currentSecondary[time.dayId][time.minuteOfDay || [];
+                try {
+                    activePrimary = nProcessor.currentPrimary[time.dayId][time.minuteOfDay];
+                    if (activePrimary == undefined) activePrimary = null;
+                } catch {
+                    activePrimary = null;
+                }
             }
           }, 1000);
         // notifications
@@ -99,10 +101,6 @@
             return;
         } else {
             setTimeout(async function() {
-
-                function sleep(ms: number) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-                }
                 let divis = 1 / 50;
                 let pause = 15;
                 // fade out loading
@@ -110,7 +108,7 @@
                 while (p >= 0.2) {
                     loadingStyles["splash-opacity"] = p.toString();
                     p -= divis;
-                    await sleep(pause);
+                    await General.sleep(pause);
                 }
                 loadingStyles["splash-opacity"] = "0";
                 loadingStyles["splash-display"] = "none";
@@ -121,7 +119,7 @@
                     loadingStyles["core-opacity"] = p.toString();
                     p += divis;
                     showLoadingScreen = (p < 0.8); // consider the loading screen ready for execution at 80%
-                    await sleep(pause);
+                    await General.sleep(pause);
                 }
                 loadingStyles["core-opacity"] = "1";
                 loadingStyles["core-display"] = "block";
