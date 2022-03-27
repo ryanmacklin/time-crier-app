@@ -308,7 +308,7 @@ export class NotificationsClass {
             t += rand;
         }
 
-        General.logObject(res);
+       //General.logObject(res);
         return res;
     }
 
